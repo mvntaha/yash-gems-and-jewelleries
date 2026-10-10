@@ -35,6 +35,12 @@ namespace Yash_Gems___Jewelleries.ViewModels
         public int[]? CategoryIds { get; set; }
         public int[]? GoldTypeIds { get; set; }
         public string[]? StoneColors { get; set; }
+        public int[]? ProductTypeIds { get; set; }
+        public string[]? DiamondClarities { get; set; }
+        public string[]? DiamondColors { get; set; }
+        public string[]? DiamondCuts { get; set; }
+        public string? CaratRange { get; set; }
+
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }
         public string? Availability { get; set; } // "inStock", "outStock"
@@ -45,8 +51,12 @@ namespace Yash_Gems___Jewelleries.ViewModels
         // Display Data & Counts
         public List<ItemFilterOption> Categories { get; set; } = new();
         public List<ItemFilterOption> Brands { get; set; } = new();
+        public List<ItemFilterOption> ProductTypes { get; set; } = new();
         public List<ItemFilterOption> Materials { get; set; } = new();
         public List<ItemFilterOption> StoneColorsList { get; set; } = new();
+        public List<ItemFilterOption> DiamondClaritiesList { get; set; } = new();
+        public List<ItemFilterOption> DiamondColorsList { get; set; } = new();
+        public List<ItemFilterOption> DiamondCutsList { get; set; } = new();
         
         public int InStockCount { get; set; }
         public int OutOfStockCount { get; set; }
@@ -54,6 +64,26 @@ namespace Yash_Gems___Jewelleries.ViewModels
         public int TotalItems { get; set; }
         public int PageSize { get; set; } = 12;
         public int TotalPages => (int)Math.Ceiling(TotalItems / (double)PageSize);
+        
+        // Additional properties for view compatibility
+        public int CurrentPage => Page;
+        public int TotalCount => TotalItems;
+        public int[] SelectedProductTypeIds => ProductTypeIds ?? Array.Empty<int>();
+        public string[] SelectedDiamondClarities => DiamondClarities ?? Array.Empty<string>();
+        public string[] SelectedDiamondColors => DiamondColors ?? Array.Empty<string>();
+        public List<string> AvailableDiamondClarities => DiamondClaritiesList.Select(x => x.Label).ToList();
+        public List<string> AvailableDiamondColors => DiamondColorsList.Select(x => x.Label).ToList();
+        public string? PriceRange
+        {
+            get
+            {
+                if (MinPrice.HasValue && MaxPrice.HasValue)
+                {
+                    return $"{MinPrice}-{MaxPrice}";
+                }
+                return null;
+            }
+        }
         
         // The actual items for the current page
         public IEnumerable<Item> Items { get; set; } = new List<Item>();
@@ -76,6 +106,10 @@ namespace Yash_Gems___Jewelleries.ViewModels
         public int Count { get; set; }
         public string? ImageUrl { get; set; }
         public bool IsSelected { get; set; }
+        
+        // Aliases for view compatibility
+        public string Name => Label;
+        public int ProductCount => Count;
     }
 
     // Diamond Detail View Model

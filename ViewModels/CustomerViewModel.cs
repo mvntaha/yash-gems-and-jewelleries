@@ -23,6 +23,7 @@ namespace Yash_Gems___Jewelleries.ViewModels
         public decimal TotalSpent { get; set; }
         public int TotalInvoices { get; set; }
         public Order? LatestOrder { get; set; }
+        public bool IsNewsletterSubscribed { get; set; }
     }
 
     // Index view model for customer
