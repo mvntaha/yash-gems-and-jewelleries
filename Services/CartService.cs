@@ -1,310 +1,198 @@
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Yash_Gems___Jewelleries.Data;
 using Yash_Gems___Jewelleries.Models;
-using Yash_Gems___Jewelleries.Models.ViewModels;
-using Yash_Gems___Jewelleries.Services; 
+using Yash_Gems___Jewelleries.ViewModels;
+using Yash_Gems___Jewelleries.Interfaces;
 
 namespace Yash_Gems___Jewelleries.Services
 {
     public class CartService : ICartService
     {
         private readonly ApplicationDbContext _context;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private const string SessionCartKey = "GuestCart";
 
-        public CartService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
+        public CartService(ApplicationDbContext context)
         {
             _context = context;
-            _httpContextAccessor = httpContextAccessor;
         }
 
-        private ISession Session => _httpContextAccessor.HttpContext!.Session;
-
-        // Guest Cart Helper: Get List from Session
-        private List<CartItem> GetSessionCart()
+        private IQueryable<CartItem> GetCartQuery(string? userId, string? guestId)
         {
-            var sessionData = Session.GetString(SessionCartKey);
-            return sessionData == null 
-                ? new List<CartItem>() 
-                : JsonSerializer.Deserialize<List<CartItem>>(sessionData) ?? new List<CartItem>();
-        }
-
-        // Guest Cart Helper: Save List to Session
-        private void SaveSessionCart(List<CartItem> cart)
-        {
-            var options = new JsonSerializerOptions
-            {
-                ReferenceHandler = ReferenceHandler.IgnoreCycles
-            };
-            Session.SetString(SessionCartKey, JsonSerializer.Serialize(cart, options));
-        }
-
-        public async Task<CartViewModel> GetCartAsync(string? userId)
-        {
-            var viewModel = new CartViewModel();
-            List<CartItem> cartItems;
-
             if (!string.IsNullOrEmpty(userId))
             {
-                // Authenticated User
-                cartItems = await _context.CartItems
-                    .Include(c => c.Item)
-                    .ThenInclude(i => i.ProductType)
-                    .Where(c => c.UserId == userId)
-                    .ToListAsync();
+                return _context.CartItems.Where(c => c.UserId == userId);
             }
-            else
+            if (!string.IsNullOrEmpty(guestId))
             {
-                // Guest
-                cartItems = GetSessionCart();
-
-                // We need to fetch Item details for guest cart items as session might only store IDs or stale data
-                var styleCodes = cartItems.Select(c => c.StyleCode).ToList();
-                var dbItems = await _context.Items
-                    .Include(i => i.ProductType)
-                    .Where(i => styleCodes.Contains(i.StyleCode))
-                    .ToDictionaryAsync(i => i.StyleCode);
-
-                foreach (var cartItem in cartItems)
-                {
-                    if (dbItems.TryGetValue(cartItem.StyleCode, out var item))
-                    {
-                        cartItem.Item = item;
-                        cartItem.PriceAtAdd = item.SellingPrice;
-                        cartItem.CalculateSubtotal();
-                    }
-                }
+                return _context.CartItems.Where(c => c.GuestId == guestId && c.UserId == null);
             }
+            return _context.CartItems.Where(c => false);
+        }
 
-            // Map to ViewModel
-            foreach (var item in cartItems)
-            {
-                if (item.Item == null) continue;
-
-                viewModel.Items.Add(new CartItemViewModel
+        public async Task<CartViewModel> GetCartAsync(string? userId, string? guestId)
+        {
+            var viewModel = new CartViewModel();
+            
+            var items = await GetCartQuery(userId, guestId)
+                .Include(i => i.Item)
+                .ThenInclude(i => i.ProductType)
+                .AsNoTracking()
+                .Select(item => new CartItemViewModel
                 {
                     CartItemId = item.CartItemId,
                     StyleCode = item.StyleCode,
                     ProductName = item.Item.ItemName,
-                    ProductImage = item.Item.PrimaryImageUrl,
-                    ProductType = item.Item.ProductType?.ProductTypeName ?? "Standard",
+                    ProductImage = item.Item.PrimaryImageUrl ?? string.Empty,
+                    ProductType = item.Item.ProductType != null ? item.Item.ProductType.ProductTypeName : "Standard",
                     Price = item.Item.SellingPrice,
                     Quantity = item.Quantity,
                     MaxStock = item.Item.Quantity
-                });
+                })
+                .ToListAsync();
+
+            foreach (var item in items)
+            {
+                item.Subtotal = item.Price * item.Quantity;
             }
+
+            viewModel.Items = items;
+            viewModel.Subtotal = viewModel.Items.Sum(i => i.Subtotal);
+            
+            if (viewModel.Items.Any())
+            {
+                var settings = await _context.SystemSettings.AsNoTracking().FirstOrDefaultAsync();
+                viewModel.TaxRate = settings?.DefaultTaxRate ?? 3.00m;
+                viewModel.Tax = viewModel.Subtotal * (viewModel.TaxRate / 100);
+            }
+
+            viewModel.Total = viewModel.Subtotal + viewModel.ShippingCost + viewModel.Tax;
 
             return viewModel;
         }
 
-        public async Task<bool> AddToCartAsync(string? userId, string styleCode, int quantity)
+        public async Task<bool> AddToCartAsync(string? userId, string? guestId, string styleCode, int quantity)
         {
             var item = await _context.Items.FindAsync(styleCode);
             if (item == null || !item.IsActive) return false;
 
-            if (!string.IsNullOrEmpty(userId))
+            var cartItem = await GetCartQuery(userId, guestId)
+                .FirstOrDefaultAsync(c => c.StyleCode == styleCode);
+
+            if (cartItem != null)
             {
-                // DB Cart
-                var cartItem = await _context.CartItems
-                    .FirstOrDefaultAsync(c => c.UserId == userId && c.StyleCode == styleCode);
+                int newQty = cartItem.Quantity + quantity;
+                if (newQty > item.Quantity) newQty = item.Quantity;
+                if (newQty < 1) newQty = 1;
 
-                if (cartItem != null)
-                {
-                    // Atomic update check
-                    int newQty = cartItem.Quantity + quantity;
-                    if (newQty > item.Quantity) newQty = item.Quantity;
-                    if (newQty < 1) newQty = 1;
-                    
-                    cartItem.Quantity = newQty;
-                    cartItem.PriceAtAdd = item.SellingPrice;
-                    cartItem.CalculateSubtotal();
-                    cartItem.ModifiedDate = DateTime.UtcNow;
-                }
-                else
-                {
-                    if (quantity < 1) return false;
-                    if (quantity > item.Quantity) return false;
-
-                    cartItem = new CartItem
-                    {
-                        UserId = userId,
-                        StyleCode = styleCode,
-                        Quantity = quantity,
-                        PriceAtAdd = item.SellingPrice,
-                        AddedDate = DateTime.UtcNow
-                    };
-                    cartItem.CalculateSubtotal();
-                    _context.CartItems.Add(cartItem);
-                }
-                await _context.SaveChangesAsync();
-            }
-            else
-            {
-                // Session Cart
-                var cart = GetSessionCart();
-                var cartItem = cart.FirstOrDefault(c => c.StyleCode == styleCode);
-
-                if (cartItem != null)
-                {
-                    int newQty = cartItem.Quantity + quantity;
-                    if (newQty > item.Quantity) newQty = item.Quantity;
-                    if (newQty < 1) newQty = 1;
-
-                    cartItem.Quantity = newQty;
-                    cartItem.PriceAtAdd = item.SellingPrice;
-                    cartItem.CalculateSubtotal();
-                }
-                else
-                {
-                    int finalQty = quantity;
-                    if (finalQty > item.Quantity) finalQty = item.Quantity;
-                    if (finalQty < 1) finalQty = 1;
-
-                    cartItem = new CartItem
-                    {
-                        CartItemId = 0, // Temporary ID
-                        UserId = "Guest",
-                        StyleCode = styleCode,
-                        Quantity = finalQty,
-                        PriceAtAdd = item.SellingPrice,
-                        AddedDate = DateTime.UtcNow
-                    };
-                    cartItem.CalculateSubtotal();
-                    cart.Add(cartItem);
-                }
-                SaveSessionCart(cart);
-            }
-            return true;
-        }
-
-        public async Task<bool> UpdateQuantityAsync(string? userId, int cartItemId, string styleCode, int quantity)
-        {
-            var item = await _context.Items.FindAsync(styleCode);
-            if (item == null || quantity <= 0) return false;
-            
-            if (quantity > item.Quantity) return false;
-
-            if (!string.IsNullOrEmpty(userId))
-            {
-                 // DB Cart
-                var cartItem = await _context.CartItems
-                    .FirstOrDefaultAsync(c => c.CartItemId == cartItemId && c.UserId == userId);
-                
-                // Fallback
-                if (cartItem == null)
-                {
-                     cartItem = await _context.CartItems
-                        .FirstOrDefaultAsync(c => c.StyleCode == styleCode && c.UserId == userId);
-                }
-
-                if (cartItem == null) return false;
-
-                // Atomic update
-                int finalQty = quantity;
-                if (finalQty > item.Quantity) finalQty = item.Quantity;
-                if (finalQty < 1) finalQty = 1;
-
-                cartItem.Quantity = finalQty;
+                cartItem.Quantity = newQty;
                 cartItem.PriceAtAdd = item.SellingPrice;
                 cartItem.CalculateSubtotal();
                 cartItem.ModifiedDate = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
             }
             else
             {
-                // Session Cart
-                var cart = GetSessionCart();
-                var cartItem = cart.FirstOrDefault(c => c.StyleCode == styleCode);
-                
-                if (cartItem == null) return false;
+                if (quantity < 1) return false;
+                int finalQty = Math.Min(quantity, item.Quantity);
 
-                int finalQty = quantity;
-                if (finalQty > item.Quantity) finalQty = item.Quantity;
-                if (finalQty < 1) finalQty = 1;
-
-                cartItem.Quantity = finalQty;
-                cartItem.PriceAtAdd = item.SellingPrice;
-                cartItem.CalculateSubtotal();
-                SaveSessionCart(cart);
-            }
-            return true;
-        }
-
-        public async Task<bool> RemoveItemAsync(string? userId, int cartItemId, string styleCode)
-        {
-            if (!string.IsNullOrEmpty(userId))
-            {
-                // DB Cart
-                var cartItem = await _context.CartItems
-                   .FirstOrDefaultAsync(c => c.CartItemId == cartItemId && c.UserId == userId);
-                
-                // Fallback
-                if (cartItem == null)
-                    cartItem = await _context.CartItems
-                        .FirstOrDefaultAsync(c => c.StyleCode == styleCode && c.UserId == userId);
-
-                if (cartItem == null) return false;
-
-                _context.CartItems.Remove(cartItem);
-                await _context.SaveChangesAsync();
-            }
-            else
-            {
-                // Session Cart
-                var cart = GetSessionCart();
-                var cartItem = cart.FirstOrDefault(c => c.StyleCode == styleCode);
-                if (cartItem != null)
+                cartItem = new CartItem
                 {
-                    cart.Remove(cartItem);
-                    SaveSessionCart(cart);
-                }
+                    UserId = userId,
+                    GuestId = string.IsNullOrEmpty(userId) ? guestId : null,
+                    StyleCode = styleCode,
+                    Quantity = finalQty,
+                    PriceAtAdd = item.SellingPrice,
+                    AddedDate = DateTime.UtcNow
+                };
+                cartItem.CalculateSubtotal();
+                _context.CartItems.Add(cartItem);
             }
+
+            await _context.SaveChangesAsync();
             return true;
         }
 
-        public async Task ClearCartAsync(string? userId)
+        public async Task<bool> UpdateQuantityAsync(string? userId, string? guestId, int cartItemId, string styleCode, int quantity)
         {
-            if (!string.IsNullOrEmpty(userId))
+            var item = await _context.Items.AsNoTracking().FirstOrDefaultAsync(i => i.StyleCode == styleCode);
+            if (item == null || quantity <= 0) return false;
+
+            var cartItem = await GetCartQuery(userId, guestId)
+                .FirstOrDefaultAsync(c => (cartItemId > 0 && c.CartItemId == cartItemId) || c.StyleCode == styleCode);
+
+            if (cartItem == null) return false;
+
+            int finalQty = Math.Min(quantity, item.Quantity);
+            if (finalQty < 1) finalQty = 1;
+
+            cartItem.Quantity = finalQty;
+            cartItem.PriceAtAdd = item.SellingPrice;
+            cartItem.CalculateSubtotal();
+            cartItem.ModifiedDate = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RemoveItemAsync(string? userId, string? guestId, int cartItemId, string styleCode)
+        {
+            var cartItem = await GetCartQuery(userId, guestId)
+                .FirstOrDefaultAsync(c => (cartItemId > 0 && c.CartItemId == cartItemId) || c.StyleCode == styleCode);
+
+            if (cartItem == null) return false;
+
+            _context.CartItems.Remove(cartItem);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task ClearCartAsync(string? userId, string? guestId)
+        {
+            var items = await GetCartQuery(userId, guestId).ToListAsync();
+            if (items.Any())
             {
-                var items = _context.CartItems.Where(c => c.UserId == userId);
                 _context.CartItems.RemoveRange(items);
                 await _context.SaveChangesAsync();
             }
-            else
-            {
-                Session.Remove(SessionCartKey);
-            }
         }
 
-        public async Task MergeGuestCartToUserCartAsync(string userId)
+        public async Task MergeGuestCartToUserCartAsync(string userId, string guestId)
         {
-            var guestCart = GetSessionCart();
-            if (!guestCart.Any()) return;
+            if (string.IsNullOrEmpty(guestId)) return;
 
-            foreach (var guestItem in guestCart)
+            var guestCartItems = await _context.CartItems
+                .Where(c => c.GuestId == guestId && c.UserId == null)
+                .ToListAsync();
+
+            if (!guestCartItems.Any()) return;
+
+            foreach (var guestItem in guestCartItems)
             {
-                await AddToCartAsync(userId, guestItem.StyleCode, guestItem.Quantity);
+                var existingUserItem = await _context.CartItems
+                    .FirstOrDefaultAsync(c => c.UserId == userId && c.StyleCode == guestItem.StyleCode);
+
+                if (existingUserItem != null)
+                {
+                    var product = await _context.Items.FindAsync(guestItem.StyleCode);
+                    int maxStock = product?.Quantity ?? guestItem.Quantity;
+                    
+                    existingUserItem.Quantity = Math.Min(existingUserItem.Quantity + guestItem.Quantity, maxStock);
+                    existingUserItem.ModifiedDate = DateTime.UtcNow;
+                    _context.CartItems.Remove(guestItem);
+                }
+                else
+                {
+                    guestItem.UserId = userId;
+                    guestItem.GuestId = null;
+                    guestItem.ModifiedDate = DateTime.UtcNow;
+                }
             }
 
-            // Clear guest cart after merge
-            Session.Remove(SessionCartKey);
+            await _context.SaveChangesAsync();
         }
 
-        public async Task<int> GetCartCountAsync(string? userId)
+        public async Task<int> GetCartCountAsync(string? userId, string? guestId)
         {
-            if (!string.IsNullOrEmpty(userId))
-            {
-                return await _context.CartItems
-                    .Where(c => c.UserId == userId)
-                    .SumAsync(c => c.Quantity);
-            }
-            else
-            {
-                var cart = GetSessionCart();
-                return cart.Sum(c => c.Quantity);
-            }
+            // Requirement: reflect the number of unique products (e.g., 1 Item A + 3 Item B = 2)
+            return await GetCartQuery(userId, guestId).CountAsync();
         }
     }
 }

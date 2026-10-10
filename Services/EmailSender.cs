@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Yash_Gems___Jewelleries.Models;
+using Yash_Gems___Jewelleries.Interfaces;
 
 namespace Yash_Gems___Jewelleries.Services
 {
@@ -6,7 +9,7 @@ namespace Yash_Gems___Jewelleries.Services
     /// Email sender service for sending verification and password reset emails
     /// Uses SMTP configuration from appsettings.json
     /// </summary>
-    public class EmailSender : IEmailSender
+    public class EmailSender : IEmailSender, IEmailSender<ApplicationUser>
     {
         private readonly IConfiguration _configuration;
         private readonly ILogger<EmailSender> _logger;
@@ -18,6 +21,26 @@ namespace Yash_Gems___Jewelleries.Services
         }
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
+        {
+            await SendEmailInternalAsync(email, subject, htmlMessage);
+        }
+
+        public async Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
+        {
+            await SendEmailInternalAsync(email, "Confirm your email", $"Please confirm your account by <a href='{confirmationLink}'>clicking here</a>.");
+        }
+
+        public async Task SendPasswordResetLinkAsync(ApplicationUser user, string email, string resetLink)
+        {
+            await SendEmailInternalAsync(email, "Reset your password", $"Please reset your password by <a href='{resetLink}'>clicking here</a>.");
+        }
+
+        public async Task SendPasswordResetCodeAsync(ApplicationUser user, string email, string resetCode)
+        {
+            await SendEmailInternalAsync(email, "Reset your password", $"Please reset your password using the following code: {resetCode}");
+        }
+
+        private async Task SendEmailInternalAsync(string email, string subject, string htmlMessage)
         {
             if (_configuration.GetValue<bool>("Email:UseMockSender"))
             {

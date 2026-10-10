@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.UI.Services;
 using System.Text;
 using Yash_Gems___Jewelleries.Models;
+using Yash_Gems___Jewelleries.Interfaces;
 
 namespace Yash_Gems___Jewelleries.Services
 {
@@ -26,11 +27,16 @@ namespace Yash_Gems___Jewelleries.Services
             try
             {
                 var subject = $"Order Confirmation - {order.OrderNumber}";
+                var customerName = order.CustomerName ?? "Valued Customer";
                 var body = BuildOrderEmailBody(order, "Order Confirmation", 
-                    $"Thank you for your order, {order.CustomerName}! Your order has been received and is being processed.");
+                    $"Thank you for your order, {customerName}! Your order has been received and is being processed.");
 
-                await _emailSender.SendEmailAsync(order.Email, subject, body);
-                _logger.LogInformation("Order confirmation email sent for {OrderNumber}", order.OrderNumber);
+                var email = order.Email ?? string.Empty;
+                if (!string.IsNullOrEmpty(email))
+                {
+                    await _emailSender.SendEmailAsync(email, subject, body);
+                    _logger.LogInformation("Order confirmation email sent for {OrderNumber}", order.OrderNumber);
+                }
             }
             catch (Exception ex)
             {
@@ -90,7 +96,7 @@ namespace Yash_Gems___Jewelleries.Services
                             </tr>
                             <tr>
                                 <td style='padding: 5px 0; font-weight: bold;'>Order Status:</td>
-                                <td style='padding: 5px 0; text-align: right;'>{order.OrderStatus}</td>
+                                <td style='padding: 5px 0; text-align: right;'>{order.OrderStatus.ToString()}</td>
                             </tr>
                         </table>
                     </div>

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Yash_Gems___Jewelleries.Data;
 using Yash_Gems___Jewelleries.Models;
 using Yash_Gems___Jewelleries.Models.Masters;
+using Yash_Gems___Jewelleries.Interfaces;
 
 namespace Yash_Gems___Jewelleries.Services
 {
@@ -21,6 +22,7 @@ namespace Yash_Gems___Jewelleries.Services
         public async Task<List<Category>> GetCategoriesAsync(int count)
         {
             return await _context.Categories
+                .AsNoTracking()
                 .Where(c => c.IsActive)
                 .OrderBy(c => c.CategoryName)
                 .Take(count)
@@ -31,6 +33,7 @@ namespace Yash_Gems___Jewelleries.Services
         public async Task<List<Item>> GetNewArrivalsAsync(int count)
         {
             return await _context.Items
+                .AsNoTracking()
                 .Include(i => i.Category)
                 .Include(i => i.Brand)
                 .Where(i => i.IsActive && i.Quantity > 0)
@@ -43,6 +46,7 @@ namespace Yash_Gems___Jewelleries.Services
         public async Task<List<Brand>> GetBrandsAsync(int count)
         {
             return await _context.Brands
+                .AsNoTracking()
                 .Where(b => b.IsActive)
                 .OrderBy(b => b.BrandType)
                 .Take(count)
@@ -53,6 +57,7 @@ namespace Yash_Gems___Jewelleries.Services
         public async Task<List<Item>> GetFeaturedProductsAsync(int count)
         {
             var products = await _context.Items
+                .AsNoTracking()
                 .Include(i => i.Category)
                 .Include(i => i.Brand)
                 .Where(i => i.IsActive && i.IsFeatured && i.Quantity > 0)
@@ -67,6 +72,7 @@ namespace Yash_Gems___Jewelleries.Services
                 var existingIds = products.Select(p => p.StyleCode).ToList();
                 
                 var extra = await _context.Items
+                    .AsNoTracking()
                     .Include(i => i.Category)
                     .Include(i => i.Brand)
                     .Where(i => i.IsActive && i.Quantity > 0 && !existingIds.Contains(i.StyleCode))

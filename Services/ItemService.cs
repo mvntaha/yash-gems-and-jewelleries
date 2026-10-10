@@ -5,9 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Yash_Gems___Jewelleries.Data;
-using Yash_Gems___Jewelleries.Models;
-using Yash_Gems___Jewelleries.ViewModels;
 using Yash_Gems___Jewelleries.Interfaces;
+using Yash_Gems___Jewelleries.Models;
+using Yash_Gems___Jewelleries.Models.Enums;
+using Yash_Gems___Jewelleries.ViewModels;
 
 namespace Yash_Gems___Jewelleries.Services
 {
@@ -17,13 +18,15 @@ namespace Yash_Gems___Jewelleries.Services
         private readonly IImageService _imageService;
         private readonly IMasterLookupService _masterLookup;
         private readonly ILogger<ItemService> _logger;
+        private readonly INotificationService _notificationService;
 
-        public ItemService(ApplicationDbContext context, IImageService imageService, IMasterLookupService masterLookup, ILogger<ItemService> logger)
+        public ItemService(ApplicationDbContext context, IImageService imageService, IMasterLookupService masterLookup, ILogger<ItemService> logger, INotificationService notificationService)
         {
             _context = context;
             _imageService = imageService;
             _masterLookup = masterLookup;
             _logger = logger;
+            _notificationService = notificationService;
         }
 
         public async Task<IEnumerable<Item>> GetAllProductsAsync(string? searchTerm, int? brandId, int? categoryId, bool? isActive, int page = 1, int pageSize = 10)
@@ -181,9 +184,9 @@ namespace Yash_Gems___Jewelleries.Services
                 }
 
                 // Handle Images
-                item.PrimaryImageUrl = await _imageService.SaveImageAsync(model.PrimaryImage);
-                item.SecondaryImageUrl = await _imageService.SaveImageAsync(model.SecondaryImage);
-                item.TertiaryImageUrl = await _imageService.SaveImageAsync(model.TertiaryImage);
+                item.PrimaryImageUrl = await _imageService.SaveImageAsync(model.PrimaryImage, IImageService.ProductsMain);
+                item.SecondaryImageUrl = await _imageService.SaveImageAsync(model.SecondaryImage, IImageService.ProductsGallery);
+                item.TertiaryImageUrl = await _imageService.SaveImageAsync(model.TertiaryImage, IImageService.ProductsGallery);
 
                 // Enforce pricing recalculation on server
                 item.TotalDiamondAmount = item.DiamondDetails.Sum(d => d.TotalAmount);
@@ -193,6 +196,16 @@ namespace Yash_Gems___Jewelleries.Services
                 _context.Items.Add(item);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+
+                // Check for low stock
+                if (item.Quantity < 5)
+                {
+                    await _notificationService.CreateNotificationAsync(
+                        "Low Stock Alert",
+                        $"Product {item.ItemName} ({item.StyleCode}) has low stock: {item.Quantity} remaining.",
+                        NotificationType.LowInventoryThreshold,
+                        item.StyleCode);
+                }
 
                 _logger.LogInformation("Successfully created product with StyleCode: {StyleCode}, MRP: {MRP}, SellingPrice: {SellingPrice}",
                     item.StyleCode, item.MRP, item.SellingPrice);
@@ -259,19 +272,19 @@ namespace Yash_Gems___Jewelleries.Services
                 if (model.NewPrimaryImage != null)
                 {
                     _imageService.DeleteImage(existingItem.PrimaryImageUrl);
-                    existingItem.PrimaryImageUrl = await _imageService.SaveImageAsync(model.NewPrimaryImage);
+                    existingItem.PrimaryImageUrl = await _imageService.SaveImageAsync(model.NewPrimaryImage, IImageService.ProductsMain);
                     _logger.LogInformation("Updated primary image for product: {StyleCode}", model.StyleCode);
                 }
                 if (model.NewSecondaryImage != null)
                 {
                     _imageService.DeleteImage(existingItem.SecondaryImageUrl);
-                    existingItem.SecondaryImageUrl = await _imageService.SaveImageAsync(model.NewSecondaryImage);
+                    existingItem.SecondaryImageUrl = await _imageService.SaveImageAsync(model.NewSecondaryImage, IImageService.ProductsGallery);
                     _logger.LogInformation("Updated secondary image for product: {StyleCode}", model.StyleCode);
                 }
                 if (model.NewTertiaryImage != null)
                 {
                     _imageService.DeleteImage(existingItem.TertiaryImageUrl);
-                    existingItem.TertiaryImageUrl = await _imageService.SaveImageAsync(model.NewTertiaryImage);
+                    existingItem.TertiaryImageUrl = await _imageService.SaveImageAsync(model.NewTertiaryImage, IImageService.ProductsGallery);
                     _logger.LogInformation("Updated tertiary image for product: {StyleCode}", model.StyleCode);
                 }
 
@@ -476,7 +489,11 @@ namespace Yash_Gems___Jewelleries.Services
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                query = query.Where(i => i.StyleCode.Contains(searchTerm) || i.ItemName.Contains(searchTerm));
+                searchTerm = searchTerm.Trim().ToLower();
+                query = query.Where(i => i.StyleCode.ToLower().Contains(searchTerm) || 
+                                         i.ItemName.ToLower().Contains(searchTerm) ||
+                                         (i.Brand != null && i.Brand.BrandType.ToLower().Contains(searchTerm)) ||
+                                         (i.Category != null && i.Category.CategoryName.ToLower().Contains(searchTerm)));
             }
 
             if (brandId.HasValue) query = query.Where(i => i.BrandId == brandId.Value);
