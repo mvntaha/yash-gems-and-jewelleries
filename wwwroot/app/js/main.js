@@ -30,7 +30,7 @@
  *Animation Custom
  *Parallaxie
  *Update Compare Empty
- *Delete Wishlist
+
  *Preloader
  */
 
@@ -730,25 +730,7 @@
         });
     };
 
-    /* Add Wishlist
-    -------------------------------------------------------------------------*/
-    var addWishList = function () {
-        $(".btn-add-wishlist, .card_product--V01 .wishlist").on("click", function () {
-            let $this = $(this);
-            let icon = $this.find(".icon");
-            let tooltip = $this.find(".tooltip");
 
-            $this.toggleClass("addwishlist");
-
-            if ($this.hasClass("addwishlist")) {
-                icon.removeClass("icon-heart-2").addClass("icon-trash");
-                tooltip.text("Remove Wishlist");
-            } else {
-                icon.removeClass("icon-trash").addClass("icon-heart-2");
-                tooltip.text("Add to Wishlist");
-            }
-        });
-    };
     /* Handle Sidebar Filter 
     -------------------------------------------------------------------------*/
     var handleSidebarFilter = function () {
@@ -1232,77 +1214,12 @@
             }
         });
     };
-    /* Delete Wishlist
-    ----------------------------------------------------------------------------*/
-    var deleteWishList = function () {
-        function checkEmpty() {
-            var $wishlistInner = $(".wrapper-wishlist");
-            var productCount = $(".wrapper-wishlist .card_product--V01").length;
-            var $sRecenty = $(".s-recently");
 
-            if (productCount <= 12) {
-                $(".wrapper-wishlist .wd-full,.wrapper-wishlist .loadItem").hide();
-            } else {
-                $(".wrapper-wishlist .wd-full,.wrapper-wishlist .loadItem").show();
-            }
-
-            if (productCount === 0) {
-                $wishlistInner.append(`
-          <div class="tf-wishlist-empty text-center">
-            <p class="text-notice h6">NO PRODUCTS WERE ADDED TO THE WISHLIST.</p>
-            <a href="shop-collection-list.html" class="tf-btn animate-btn btn-fill btn-back-shop">BACK TO SHOPPING</a>
-          </div>
-        `);
-                $sRecenty.removeClass("d-none");
-            } else {
-                $wishlistInner.find(".tf-compare-empty").remove();
-            }
-        }
-
-        $(".remove").on("click", function (e) {
-            e.preventDefault();
-            var $this = $(this);
-            $this.closest(".card_product--V01").remove();
-            checkEmpty();
-        });
-
-        checkEmpty();
-    };
     /* Preloader
     -------------------------------------------------------------------------*/
     var preloader = function () {
         $("#preload").fadeOut("slow", function () {
             $(this).remove();
-        });
-    };
-    /* Preloader
-    -------------------------------------------------------------------------*/
-    var handleRate = function () {
-        let selectedRating = 0;
-
-        function paintStars(rating) {
-            $(".handle-rating .star").each(function (index) {
-                if (index < rating) {
-                    $(this).css("color", "#1F1F1F");
-                } else {
-                    $(this).css("color", "#D2D2D2");
-                }
-            });
-        }
-
-        $(".handle-rating .star").hover(
-            function () {
-                let hoverRating = $(this).data("value");
-                paintStars(hoverRating);
-            },
-            function () {
-                paintStars(selectedRating);
-            }
-        );
-
-        $(".star").click(function () {
-            selectedRating = $(this).data("value");
-            paintStars(selectedRating);
         });
     };
     /* Update Layout Title Vertical
@@ -1330,7 +1247,7 @@
     var checkOut = function () {
         $("#checkout-btn").on("click", function () {
             if ($("#agree-term").is(":checked")) {
-                window.location.href = "checkout.html";
+                window.location.href = "/Cart";
             } else {
                 alert("Please agree to the Terms and Conditions before continuing.");
             }
@@ -1395,22 +1312,7 @@
                 $messageBox.text("Question applied successfully!").addClass("success").fadeIn(300);
             }
         });
-        $(".form-contact button").on("click", function (e) {
-            e.preventDefault();
 
-            var country = $(".form-contact #name").val().trim();
-            var email = $(".form-contact #email").val().trim();
-            var desc = $(".form-contact #desc").val().trim();
-
-            var $messageBox = $(".form-contact .form_message");
-            $messageBox.hide().removeClass("success error");
-
-            if (country === "" || email === "" || desc === "") {
-                $messageBox.text("Please enter all required!").addClass("error").fadeIn(300);
-            } else {
-                $messageBox.text("Applied successfully!").addClass("success").fadeIn(300);
-            }
-        });
     };
     /* Delete Count Number 
     -------------------------------------------------------------------------*/
@@ -1564,7 +1466,7 @@
         dropdownSelect();
         btnQuantity();
         deleteFile();
-        deleteWishList();
+
         goTop();
         variantPicker();
         changeValue();
@@ -1585,14 +1487,13 @@
         infiniteSlide();
         videoPopup();
         updateBundleTotal();
-        addWishList();
+
         handleSidebarFilter();
         estimateShipping();
         couponCopy();
         animeCustom();
         parallaxie();
         tableCompareRemove();
-        handleRate();
         updateWid();
         checkOut();
         handleResultIP();

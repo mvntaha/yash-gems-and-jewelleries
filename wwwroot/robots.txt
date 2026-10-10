@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://yash-gems.runasp.net.xml
