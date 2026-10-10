@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Yash_Gems___Jewelleries.Models;
+using Yash_Gems___Jewelleries.Models.Interfaces;
 
 namespace Yash_Gems___Jewelleries.Models.Masters
 {
@@ -8,11 +9,21 @@ namespace Yash_Gems___Jewelleries.Models.Masters
     /// Master table for jewelry brands
     /// </summary>
     [Table("Brands")]
-    public class Brand
+    public class Brand : IMasterEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int BrandId { get; set; }
+
+        /// <summary>
+        /// IMasterEntity.Id implementation - maps to BrandId
+        /// </summary>
+        [NotMapped]
+        public int Id
+        {
+            get => BrandId;
+            set => BrandId = value;
+        }
 
         [Required]
         [StringLength(100)]
@@ -43,6 +54,12 @@ namespace Yash_Gems___Jewelleries.Models.Masters
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         public DateTime? ModifiedDate { get; set; }
+
+        /// <summary>
+        /// Row version for optimistic concurrency control
+        /// </summary>
+        [Timestamp]
+        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
         // Navigation Properties
         public virtual ICollection<Item> Items { get; set; } = new List<Item>();

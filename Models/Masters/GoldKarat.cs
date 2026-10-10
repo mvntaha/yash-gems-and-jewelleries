@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Yash_Gems___Jewelleries.Models;
+using Yash_Gems___Jewelleries.Models.Interfaces;
 
 namespace Yash_Gems___Jewelleries.Models.Masters
 {
@@ -8,11 +9,21 @@ namespace Yash_Gems___Jewelleries.Models.Masters
     /// Master table for gold karat types (e.g., 14K, 18K, 22K, 24K)
     /// </summary>
     [Table("GoldKarats")]
-    public class GoldKarat
+    public class GoldKarat : IMasterEntity
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int GoldTypeId { get; set; }
+
+        /// <summary>
+        /// IMasterEntity.Id implementation - maps to GoldTypeId
+        /// </summary>
+        [NotMapped]
+        public int Id
+        {
+            get => GoldTypeId;
+            set => GoldTypeId = value;
+        }
 
         [Required]
         [StringLength(20)]
@@ -32,6 +43,12 @@ namespace Yash_Gems___Jewelleries.Models.Masters
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         public DateTime? ModifiedDate { get; set; }
+
+        /// <summary>
+        /// Row version for optimistic concurrency control
+        /// </summary>
+        [Timestamp]
+        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
         // Navigation Properties
         public virtual ICollection<Item> Items { get; set; } = new List<Item>();

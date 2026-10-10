@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Cryptography;
+using Yash_Gems___Jewelleries.Models.Enums;
 
 namespace Yash_Gems___Jewelleries.Models
 {
@@ -148,9 +150,12 @@ namespace Yash_Gems___Jewelleries.Models
 
         // Order Status
         [Required]
-        [StringLength(50)]
         [Display(Name = "Order Status")]
-        public string OrderStatus { get; set; } = "Pending"; // Pending, Confirmed, Processing, Shipped, Delivered, Cancelled
+        public OrderStatus OrderStatus { get; set; } = OrderStatus.Pending;
+
+        [DataType(DataType.DateTime)]
+        [Display(Name = "Status Updated At")]
+        public DateTime StatusUpdatedAt { get; set; } = DateTime.UtcNow;
 
         [DataType(DataType.DateTime)]
         [Display(Name = "Expected Delivery Date")]
@@ -177,6 +182,12 @@ namespace Yash_Gems___Jewelleries.Models
         [Display(Name = "Admin Notes")]
         public string? AdminNotes { get; set; }
 
+        public bool IsGift { get; set; } = false;
+
+        [StringLength(500)]
+        [Display(Name = "Gift Message")]
+        public string? GiftMessage { get; set; }
+
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
@@ -189,6 +200,11 @@ namespace Yash_Gems___Jewelleries.Models
 
         public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
+        public virtual ICollection<OrderStatusHistory> StatusHistories { get; set; } = new List<OrderStatusHistory>();
+
+        [NotMapped]
+        public string? ProfilePictureUrl => User?.ProfilePictureUrl;
+
         /// <summary>
         /// Calculate total amount including tax and shipping
         /// </summary>
@@ -198,11 +214,14 @@ namespace Yash_Gems___Jewelleries.Models
         }
 
         /// <summary>
-        /// Generate a unique order number
+        /// Generate a unique order number with cryptographically secure random component
+        /// Format: ORDYYYYMMDDxxxxx (e.g., ORD2026021345678)
         /// </summary>
         public static string GenerateOrderNumber()
         {
-            return $"ORD{new Random().Next(1000, 9999)}";
+            var datePrefix = DateTime.UtcNow.ToString("yyyyMMdd");
+            var randomSuffix = RandomNumberGenerator.GetInt32(10000, 99999);
+            return $"ORD{datePrefix}{randomSuffix}";
         }
     }
 }

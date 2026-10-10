@@ -28,6 +28,9 @@ namespace Yash_Gems___Jewelleries.Models
         [DataType(DataType.Date)]
         public DateTime? DateOfBirth { get; set; }
 
+        [StringLength(500)]
+        public string? ProfilePictureUrl { get; set; }
+
         [StringLength(15)]
         public string? PostalCode { get; set; }
 
@@ -41,6 +44,5 @@ namespace Yash_Gems___Jewelleries.Models
         public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
         public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
         public virtual ICollection<Inquiry> Inquiries { get; set; } = new List<Inquiry>();
-        public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }

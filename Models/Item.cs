@@ -198,15 +198,6 @@ namespace Yash_Gems___Jewelleries.Models
         public virtual ICollection<StoneDetail> StoneDetails { get; set; } = new List<StoneDetail>();
         public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
         public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
-        public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
-
-        // Persisted review statistics for performance
-        [Column(TypeName = "decimal(3,2)")]
-        [Display(Name = "Average Rating")]
-        public decimal AverageRating { get; set; } = 0;
-
-        [Display(Name = "Total Reviews")]
-        public int ReviewCount { get; set; } = 0;
 
         /// <summary>
         /// Calculate all derived fields based on input values

@@ -13,10 +13,12 @@ namespace Yash_Gems___Jewelleries.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int CartItemId { get; set; }
 
-        // Foreign Key to User
-        [Required]
+        // Foreign Key to User (Nullable for Guests)
         [StringLength(450)]
-        public string UserId { get; set; } = string.Empty;
+        public string? UserId { get; set; }
+
+        [StringLength(100)]
+        public string? GuestId { get; set; }
 
         // Foreign Key to Item
         [Required]
