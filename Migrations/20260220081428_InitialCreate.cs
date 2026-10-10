@@ -38,6 +38,7 @@ namespace Yash_Gems___Jewelleries.Migrations
                     City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     State = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ProfilePictureUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     PostalCode = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     LastLoginDate = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -63,33 +64,6 @@ namespace Yash_Gems___Jewelleries.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Banners",
-                columns: table => new
-                {
-                    BannerId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
-                    ImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    MobileImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    LinkUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    ButtonText = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    DisplayOrder = table.Column<int>(type: "int", nullable: false),
-                    BannerType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedBy = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
-                    ModifiedBy = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Banners", x => x.BannerId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Brands",
                 columns: table => new
                 {
@@ -97,9 +71,15 @@ namespace Yash_Gems___Jewelleries.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     BrandType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    LogoUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Website = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    Location = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -115,9 +95,11 @@ namespace Yash_Gems___Jewelleries.Migrations
                     CategoryName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     ImageUrl = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    Stock = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -135,7 +117,8 @@ namespace Yash_Gems___Jewelleries.Migrations
                     IssuingAuthority = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -155,7 +138,8 @@ namespace Yash_Gems___Jewelleries.Migrations
                     Cut = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -205,7 +189,8 @@ namespace Yash_Gems___Jewelleries.Migrations
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -234,6 +219,26 @@ namespace Yash_Gems___Jewelleries.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Notifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    ReferenceId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    TargetRole = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ProductTypes",
                 columns: table => new
                 {
@@ -244,7 +249,8 @@ namespace Yash_Gems___Jewelleries.Migrations
                     ImageUrl = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -264,11 +270,34 @@ namespace Yash_Gems___Jewelleries.Migrations
                     Origin = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_StoneQualities", x => x.StoneQualityId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SystemSettings",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OwnerPhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    OwnerEmail = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    FullAddress = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    ZipCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    City = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Country = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    PricesWithTax = table.Column<bool>(type: "bit", nullable: false),
+                    DefaultTaxRate = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SystemSettings", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -411,13 +440,16 @@ namespace Yash_Gems___Jewelleries.Migrations
                     PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CardNumberLastFour = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     CardHolderName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    OrderStatus = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    OrderStatus = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    StatusUpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ExpectedDeliveryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ActualDeliveryDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     TrackingNumber = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     CourierService = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     CustomerNotes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     AdminNotes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    IsGift = table.Column<bool>(type: "bit", nullable: false),
+                    GiftMessage = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true)
@@ -431,6 +463,41 @@ namespace Yash_Gems___Jewelleries.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Banners",
+                columns: table => new
+                {
+                    BannerId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    ImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    MobileImageUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    LinkUrl = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    ButtonText = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    DisplayOrder = table.Column<int>(type: "int", nullable: false),
+                    BannerType = table.Column<int>(type: "int", nullable: false),
+                    DiscountSchemeId = table.Column<int>(type: "int", nullable: true),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
+                    ModifiedBy = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Banners", x => x.BannerId);
+                    table.ForeignKey(
+                        name: "FK_Banners_DiscountSchemes_DiscountSchemeId",
+                        column: x => x.DiscountSchemeId,
+                        principalTable: "DiscountSchemes",
+                        principalColumn: "DiscountSchemeId",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -513,12 +580,36 @@ namespace Yash_Gems___Jewelleries.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "StatusHistories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OrderId = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    ChangedBy = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StatusHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StatusHistories_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "OrderId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CartItems",
                 columns: table => new
                 {
                     CartItemId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: true),
+                    GuestId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     StyleCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     PriceAtAdd = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
@@ -661,44 +752,6 @@ namespace Yash_Gems___Jewelleries.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Reviews",
-                columns: table => new
-                {
-                    ReviewId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    StyleCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", maxLength: 450, nullable: false),
-                    Rating = table.Column<int>(type: "int", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
-                    IsVerifiedPurchase = table.Column<bool>(type: "bit", nullable: false),
-                    IsApproved = table.Column<bool>(type: "bit", nullable: false),
-                    HelpfulCount = table.Column<int>(type: "int", nullable: false),
-                    NotHelpfulCount = table.Column<int>(type: "int", nullable: false),
-                    VendorResponse = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: true),
-                    ResponseDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Reviews", x => x.ReviewId);
-                    table.ForeignKey(
-                        name: "FK_Reviews_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Reviews_Items_StyleCode",
-                        column: x => x.StyleCode,
-                        principalTable: "Items",
-                        principalColumn: "StyleCode",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "StoneDetails",
                 columns: table => new
                 {
@@ -765,39 +818,13 @@ namespace Yash_Gems___Jewelleries.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Brands",
-                columns: new[] { "BrandId", "BrandType", "CreatedDate", "Description", "IsActive", "ModifiedDate" },
-                values: new object[,]
-                {
-                    { 1, "Tanishq", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pakistan's most trusted jewelry brand", true, null },
-                    { 2, "CaratLane", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Modern jewelry designs", true, null },
-                    { 3, "Mia by Tanishq", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Contemporary jewelry for millennials", true, null },
-                    { 4, "PC Jeweller", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Traditional and modern designs", true, null },
-                    { 5, "Kalyan Jewellers", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "South Indian traditional jewelry", true, null }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Categories",
-                columns: new[] { "CategoryId", "CategoryName", "CreatedDate", "Description", "ImageUrl", "IsActive", "ModifiedDate" },
-                values: new object[,]
-                {
-                    { 1, "Gold", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Gold jewelry collection", null, true, null },
-                    { 2, "Diamond", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Diamond jewelry collection", null, true, null },
-                    { 3, "Platinum", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Platinum jewelry collection", null, true, null },
-                    { 4, "Silver", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Silver jewelry collection", null, true, null },
-                    { 5, "Gemstone", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Gemstone jewelry collection", null, true, null }
-                });
-
-            migrationBuilder.InsertData(
                 table: "Certificates",
                 columns: new[] { "CertificateId", "CertifyType", "CreatedDate", "Description", "IsActive", "IssuingAuthority", "ModifiedDate" },
                 values: new object[,]
                 {
-                    { 1, "GIA", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, "Gemological Institute of America", null },
+                    { 1, "BIS 916", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, "Bureau of Indian Standards (HM)", null },
                     { 2, "IGI", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, "International Gemological Institute", null },
-                    { 3, "AGS", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, "American Gem Society", null },
-                    { 4, "HRD", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, "HRD Antwerp", null },
-                    { 5, "BIS", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, "Bureau of Indian Standards", null }
+                    { 3, "GIA", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, "Gemological Institute of America", null }
                 });
 
             migrationBuilder.InsertData(
@@ -805,13 +832,10 @@ namespace Yash_Gems___Jewelleries.Migrations
                 columns: new[] { "DiamondQualityId", "Clarity", "Color", "CreatedDate", "Cut", "Description", "IsActive", "ModifiedDate", "QualityGrade" },
                 values: new object[,]
                 {
-                    { 1, "Internally Flawless", "D-F", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Excellent", null, true, null, "IF" },
-                    { 2, "Very Very Slightly Included 1", "D-G", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Very Good", null, true, null, "VVS1" },
-                    { 3, "Very Very Slightly Included 2", "E-H", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Very Good", null, true, null, "VVS2" },
-                    { 4, "Very Slightly Included 1", "F-I", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Good", null, true, null, "VS1" },
-                    { 5, "Very Slightly Included 2", "G-J", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Good", null, true, null, "VS2" },
-                    { 6, "Slightly Included 1", "H-K", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Good", null, true, null, "SI1" },
-                    { 7, "Slightly Included 2", "I-L", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Fair", null, true, null, "SI2" }
+                    { 1, "Very Very Slightly Included", "D-H", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Excellent", null, true, null, "VVS" },
+                    { 2, "Very Slightly Included", "G-J", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Very Good", null, true, null, "VS" },
+                    { 3, "Slightly Included", "H-K", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Good", null, true, null, "SI" },
+                    { 4, "Artificial (American Diamond)", "White", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Good", null, true, null, "AD" }
                 });
 
             migrationBuilder.InsertData(
@@ -819,25 +843,9 @@ namespace Yash_Gems___Jewelleries.Migrations
                 columns: new[] { "GoldTypeId", "CreatedDate", "Description", "GoldCarat", "IsActive", "ModifiedDate", "PurityPercentage" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pure Gold", "24K", true, null, 99.9m },
-                    { 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Most common in Pakistan", "22K", true, null, 91.6m },
-                    { 3, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Durable for jewelry", "18K", true, null, 75.0m },
-                    { 4, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Strong and affordable", "14K", true, null, 58.3m }
-                });
-
-            migrationBuilder.InsertData(
-                table: "ProductTypes",
-                columns: new[] { "ProductTypeId", "CreatedDate", "Description", "ImageUrl", "IsActive", "ModifiedDate", "ProductTypeName" },
-                values: new object[,]
-                {
-                    { 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Finger rings", null, true, null, "Ring" },
-                    { 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Necklaces and chains", null, true, null, "Necklace" },
-                    { 3, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Ear jewelry", null, true, null, "Earrings" },
-                    { 4, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Wrist jewelry", null, true, null, "Bracelet" },
-                    { 5, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Bangles and kada", null, true, null, "Bangle" },
-                    { 6, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pendants and lockets", null, true, null, "Pendant" },
-                    { 7, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Traditional mangalsutra", null, true, null, "Mangalsutra" },
-                    { 8, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Nose jewelry", null, true, null, "Nose Pin" }
+                    { 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Pure Gold (Coins/Bars)", "24K", true, null, 99.9m },
+                    { 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Standard for Gold Jewelry", "22K", true, null, 91.6m },
+                    { 3, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Standard for Diamond Jewelry", "18K", true, null, 75.0m }
                 });
 
             migrationBuilder.InsertData(
@@ -845,13 +853,13 @@ namespace Yash_Gems___Jewelleries.Migrations
                 columns: new[] { "StoneQualityId", "Color", "CreatedDate", "Description", "IsActive", "ModifiedDate", "Origin", "QualityGrade", "StoneType" },
                 values: new object[,]
                 {
-                    { 1, "Pigeon Blood Red", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, null, "Burma", "AA+", "Ruby" },
-                    { 2, "Vivid Green", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, null, "Colombia", "AA+", "Emerald" },
-                    { 3, "Royal Blue", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, null, "Kashmir", "AA", "Sapphire" },
+                    { 1, "Red", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, null, "Burma", "Standard", "Ruby" },
+                    { 2, "Green", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, null, "Colombia", "Standard", "Emerald" },
+                    { 3, "Blue", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, null, "Kashmir", "Standard", "Sapphire" },
                     { 4, "White", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, null, "South Sea", "AAA", "Pearl" },
-                    { 5, "Violet Blue", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, null, "Tanzania", "AA", "Tanzanite" },
-                    { 6, "Blue", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, null, "Brazil", "A", "Topaz" },
-                    { 7, "Purple", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, null, "Brazil", "A", "Amethyst" }
+                    { 5, "Blue", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, null, "Brazil", "A", "Topaz" },
+                    { 6, "Purple", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, null, "Brazil", "A", "Amethyst" },
+                    { 7, "Multicolor", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, true, null, "India", "Standard", "Meena" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -894,6 +902,11 @@ namespace Yash_Gems___Jewelleries.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Banners_DiscountSchemeId",
+                table: "Banners",
+                column: "DiscountSchemeId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CartItems_StyleCode",
                 table: "CartItems",
                 column: "StyleCode");
@@ -907,7 +920,8 @@ namespace Yash_Gems___Jewelleries.Migrations
                 name: "IX_CartItems_UserId_StyleCode",
                 table: "CartItems",
                 columns: new[] { "UserId", "StyleCode" },
-                unique: true);
+                unique: true,
+                filter: "[UserId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DiamondDetails_DiamondQualityId",
@@ -986,6 +1000,21 @@ namespace Yash_Gems___Jewelleries.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Notifications_CreatedAt",
+                table: "Notifications",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_IsRead",
+                table: "Notifications",
+                column: "IsRead");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notifications_TargetRole_IsRead",
+                table: "Notifications",
+                columns: new[] { "TargetRole", "IsRead" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_OrderId",
                 table: "OrderItems",
                 column: "OrderId");
@@ -994,6 +1023,11 @@ namespace Yash_Gems___Jewelleries.Migrations
                 name: "IX_OrderItems_StyleCode",
                 table: "OrderItems",
                 column: "StyleCode");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_IsActive",
+                table: "Orders",
+                column: "IsActive");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_OrderDate",
@@ -1012,24 +1046,19 @@ namespace Yash_Gems___Jewelleries.Migrations
                 column: "OrderStatus");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Orders_PaymentStatus",
+                table: "Orders",
+                column: "PaymentStatus");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Orders_UserId",
                 table: "Orders",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reviews_StyleCode",
-                table: "Reviews",
-                column: "StyleCode");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Reviews_StyleCode_IsApproved",
-                table: "Reviews",
-                columns: new[] { "StyleCode", "IsApproved" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Reviews_UserId",
-                table: "Reviews",
-                column: "UserId");
+                name: "IX_StatusHistories_OrderId",
+                table: "StatusHistories",
+                column: "OrderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StoneDetails_StoneQualityId",
@@ -1081,28 +1110,34 @@ namespace Yash_Gems___Jewelleries.Migrations
                 name: "DiamondDetails");
 
             migrationBuilder.DropTable(
-                name: "DiscountSchemes");
-
-            migrationBuilder.DropTable(
                 name: "Inquiries");
 
             migrationBuilder.DropTable(
                 name: "NewsletterSubscriptions");
 
             migrationBuilder.DropTable(
+                name: "Notifications");
+
+            migrationBuilder.DropTable(
                 name: "OrderItems");
 
             migrationBuilder.DropTable(
-                name: "Reviews");
+                name: "StatusHistories");
 
             migrationBuilder.DropTable(
                 name: "StoneDetails");
+
+            migrationBuilder.DropTable(
+                name: "SystemSettings");
 
             migrationBuilder.DropTable(
                 name: "Wishlists");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "DiscountSchemes");
 
             migrationBuilder.DropTable(
                 name: "DiamondQualities");
