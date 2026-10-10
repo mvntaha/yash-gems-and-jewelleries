@@ -1,0 +1,56 @@
+@model IEnumerable<Yash_Gems___Jewelleries.Models.Masters.DiamondQuality>
+
+@foreach (var item in Model)
+{
+    <tr>
+        <td><a href="javascript: void(0);" class="text-dark fw-medium">#@item.DiamondQualityId</a></td>
+        <td>
+            <div>
+                <a href="javascript:void(0);" class="text-dark fw-medium fs-15">@item.QualityGrade</a>
+                <p class="text-muted mb-0 fs-11">Clarity: @(item.Clarity ?? "N/A")</p>
+            </div>
+        </td>
+        <td>
+            <div class="d-flex flex-column gap-1">
+                <span class="fs-12 text-dark fw-medium">Color: @(item.Color ?? "N/A")</span>
+                <span class="fs-11 text-muted">Cut: @(item.Cut ?? "N/A")</span>
+            </div>
+        </td>
+        <td class="text-muted">
+            @(item.Description != null && item.Description.Length > 50 ? item.Description.Substring(0, 47) + "..." : item.Description ?? "N/A")
+        </td>
+        <td>
+            @if (item.IsActive)
+            {
+                <span class="badge border border-success text-success px-2 py-1 fs-13">Active</span>
+            }
+            else
+            {
+                <span class="badge border border-danger text-danger px-2 py-1 fs-13">Inactive</span>
+            }
+        </td>
+        <td>
+            <div class="d-flex gap-2">
+                  <a href="javascript:void(0);" 
+                   class="btn btn-light btn-sm" 
+                   title="Toggle Status" 
+                   onclick="MasterData.toggleStatus(@item.DiamondQualityId, 'DiamondQuality')">
+                    <iconify-icon icon="@(item.IsActive ? "solar:eye-broken" : "solar:eye-closed-broken")" 
+                                  class="align-middle fs-18 text-muted"></iconify-icon>
+                </a>
+                <a href="javascript:void(0);" 
+                   class="btn btn-soft-primary btn-sm" 
+                   title="Edit"
+                   onclick="MasterData.openModal(@item.DiamondQualityId)">
+                    <iconify-icon icon="solar:pen-2-broken" class="align-middle fs-18"></iconify-icon>
+                </a>
+                <a href="javascript:void(0);" 
+                   class="btn btn-soft-danger btn-sm" 
+                   title="Delete"
+                   onclick="MasterData.delete(@item.DiamondQualityId)">
+                    <iconify-icon icon="solar:trash-bin-minimalistic-2-broken" class="align-middle fs-18"></iconify-icon>
+                </a>
+            </div>
+        </td>
+    </tr>
+}

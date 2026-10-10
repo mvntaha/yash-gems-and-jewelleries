@@ -1,0 +1,93 @@
+@model Yash_Gems___Jewelleries.ViewModels.InquiryReplyViewModel
+
+<form id="replyForm" asp-area="Admin" asp-controller="Inquiries" asp-action="Reply" method="post">
+    <div class="modal-header">
+        <h5 class="modal-title">Inquiry Details & Response</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <div class="modal-body">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="InquiryId" />
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label class="form-label">Customer Name</label>
+                    <input type="text" class="form-control" value="@Model.CustomerName" readonly />
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label class="form-label">Email Address</label>
+                    <input type="text" class="form-control" value="@Model.Email" readonly />
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="mb-3">
+                    <label class="form-label">Subject</label>
+                    <input type="text" class="form-control" value="@Model.Subject" readonly />
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="mb-3">
+                    <label class="form-label">Message</label>
+                    <input type="text" class="form-control" value="@Model.OriginalMessage" readonly />
+                </div>
+            </div>
+
+            <div class="col-lg-12">
+                <div class="mb-3">
+                    <label asp-for="AdminResponse" class="form-label">Your Response</label>
+                    <textarea asp-for="AdminResponse" class="form-control bg-light-subtle" rows="4" placeholder="Type your response here...">@Model.AdminResponse</textarea>
+                    <span asp-validation-for="AdminResponse" class="text-danger fs-12"></span>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label asp-for="Status" class="form-label">Inquiry Status</label>
+                    <select asp-for="Status" class="form-select">
+                        <option value="New">New</option>
+                        <option value="InProgress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Closed">Closed</option>
+                        <option value="Spam">Spam</option>
+                    </select>
+                    <span asp-validation-for="Status" class="text-danger fs-12"></span>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    @if (Model.LastUpdatedDate.HasValue)
+                    {
+                        <label class="form-label">Last Updated</label>
+                        <input type="text" class="form-control" value="@Model.LastUpdatedDate.Value.ToString("dd MMM yyyy, hh:mm tt")" readonly />
+                    }
+                    else
+                    {
+                        <label class="form-label">Created Date</label>
+                        <input type="text" class="form-control" value="@Model.CreatedDate.ToString("dd MMM yyyy, hh:mm tt")" readonly />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer border-top">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary" id="btnSendReply">
+            <span class="spinner-border spinner-border-sm d-none" id="replySpinner" role="status"></span>
+            <span id="replyText">Send Response</span>
+        </button>
+    </div>
+</form>
+
+<script>
+    if (typeof $ !== 'undefined' && $.validator) {
+        var form = $("#replyForm");
+        form.removeData("validator").removeData("unobtrusiveValidation");
+        $.validator.unobtrusive.parse(form);
+    }
+</script>

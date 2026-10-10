@@ -1,0 +1,90 @@
+@inject Yash_Gems___Jewelleries.Interfaces.IDiscountService DiscountService
+<div class="row">
+    @foreach (var banner in Model)
+    {
+        <div class="col-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="position-relative bg-light rounded overflow-hidden" style="height: 180px;">
+                        <img src="@(string.IsNullOrEmpty(banner.ImageUrl) ? "/uploads/default.png" : (banner.ImageUrl.StartsWith("/") ? banner.ImageUrl : "/" + banner.ImageUrl))" alt="@banner.Title" class="w-100 h-100" style="object-fit: cover;">
+                        <div class="position-absolute top-0 end-0 m-1">
+                            <div class="dropdown">
+                                <a href="#" class="dropdown-toggle arrow-none card-drop" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <iconify-icon icon="iconamoon:menu-kebab-vertical-circle-duotone" class="fs-20 align-middle text-muted"></iconify-icon>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a href="javascript:void(0);" class="dropdown-item" onclick="BannerManagement.openModal(@banner.BannerId)">Edit Banner</a>
+                                    <a href="javascript:void(0);" class="dropdown-item" onclick="BannerManagement.toggleStatus(@banner.BannerId)">@(banner.IsActive ? "Deactivate" : "Activate")</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap justify-content-between my-3">
+                        <div>
+                            <h4 class="mb-1">@banner.Title <span class="badge bg-info-subtle text-info fs-12 ms-1">@banner.BannerType</span></h4>
+                            @if (banner.DiscountScheme != null)
+                            {
+                                var discountMessage = DiscountService.GetDiscountMessage(banner.DiscountScheme);
+                                var isValid = DiscountService.IsSchemeValid(banner.DiscountScheme);
+                                
+                                <div class="mt-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-warning-subtle text-warning fs-11">
+                                            <iconify-icon icon="solar:ticket-bold" class="align-middle me-1"></iconify-icon>
+                                            @banner.DiscountScheme.SchemeName
+                                        </span>
+                                        @if (isValid)
+                                        {
+                                            <span class="badge bg-danger text-white fs-11" title="This message will appear on the website">
+                                                <iconify-icon icon="solar:star-bold" class="align-middle me-1"></iconify-icon>
+                                                @discountMessage
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary-subtle text-secondary fs-11">
+                                                <iconify-icon icon="solar:forbidden-circle-bold" class="align-middle me-1"></iconify-icon>
+                                                Scheme Inactive
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            <div class="mt-1">
+                                <a href="@(banner.LinkUrl ?? "#!")" class="link-primary fs-14 FW-medium">@(banner.LinkUrl ?? "No link set")</a>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="mb-0">
+                                @if (banner.IsActive)
+                                {
+                                    <span class="badge border border-success text-success px-2 py-1 fs-13">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge border border-danger text-danger px-2 py-1 fs-13">Inactive</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+                    <div class="">
+                        <p class="d-flex align-items-center gap-2 mb-1">
+                            <iconify-icon icon="solar:letter-bold-duotone" class="fs-18 text-primary"></iconify-icon>
+                            @(string.IsNullOrEmpty(banner.Description) ? "No description available" : (banner.Description.Length > 100 ? banner.Description.Substring(0, 100) + "..." : banner.Description))
+                        </p>
+                        @if (!string.IsNullOrEmpty(banner.ButtonText))
+                        {
+                            <p class="d-flex align-items-center gap-2 mb-0">
+                                <iconify-icon icon="solar:point-on-map-bold-duotone" class="fs-18 text-primary"></iconify-icon>
+                                Button: @banner.ButtonText
+                            </p>
+                        }
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between mt-3 mb-1">
+                        <p class="mb-0 fs-15 fw-medium text-dark">Display Order: @banner.DisplayOrder</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

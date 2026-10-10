@@ -1,0 +1,81 @@
+@model IEnumerable<dynamic>
+@{
+    ViewData["Title"] = "Master Data Management";
+}
+
+<div class="container-xxl">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center gap-2">
+            <h4 class="card-title flex-grow-1 m-0" id="masterTitle">
+                Master Data Management
+            </h4>
+
+            <div class="d-flex align-items-center gap-2">
+                <div class="dropdown">
+                    <button class="dropdown-toggle btn btn-sm btn-outline-light"
+                            type="button"
+                            id="statusDropdownBtn"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        Status: All
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item status-option" href="#" data-value="">All</a></li>
+                        <li><a class="dropdown-item status-option" href="#" data-value="true">Active</a></li>
+                        <li><a class="dropdown-item status-option" href="#" data-value="false">Inactive</a></li>
+                    </ul>
+                </div>
+
+                <button type="button"
+                        class="btn btn-sm btn-primary"
+                        id="btnAddMaster"
+                        disabled>
+                    Add
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div id="tableContainer">
+                <div class="text-center py-5">
+                   <!-- Master Data Content -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Global Master Modal -->
+<div class="modal fade" id="masterModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div id="masterModalBody">
+                 <div class="modal-body text-center p-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2 text-muted">Loading...</p>
+                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- DataTable JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+    
+    <script src="~/js/admin/master-data.js"></script>
+}
+
+@section Styles {
+    <!-- DataTable CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" />
+    <style>
+        #tableContainer .card { border: none !important; }
+        #tableContainer .card-header { display: none !important; } /* Hide nested headers since shell has one */
+    </style>
+}
+

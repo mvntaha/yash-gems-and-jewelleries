@@ -1,0 +1,20 @@
+@if (TempData["Success"] is string successMsg)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.AdminPanel) {
+                AdminPanel.showToast('@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(successMsg))', 'success');
+            }
+        });
+    </script>
+}
+@if (TempData["Error"] is string errorMsg)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.AdminPanel) {
+                AdminPanel.showToast('@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(errorMsg))', 'error');
+            }
+        });
+    </script>
+}

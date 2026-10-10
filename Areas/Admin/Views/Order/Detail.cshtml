@@ -1,0 +1,491 @@
+﻿@model Yash_Gems___Jewelleries.ViewModels.OrderDetailViewModel
+@using Yash_Gems___Jewelleries.Models.Enums
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<!-- Start Container Fluid -->
+<div class="container-xxl">
+    @if (Model.Order != null)
+    {
+        <div class="row">
+            <div class="col-xl-9 col-lg-8">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                        <div>
+                                            @{
+                                                var paymentStatusClass = Model.Order.PaymentStatus switch
+                                                {
+                                                    "Completed" => "border-success text-success",
+                                                    "Pending" => "border-warning text-warning",
+                                                    "Failed" => "border-danger text-danger",
+                                                    "Refunded" => "border-info text-info",
+                                                    _ => "border-secondary text-secondary"
+                                                };
+                                                var orderStatusClass = Model.Order.OrderStatus switch
+                                                {
+                                                    OrderStatus.Pending => "bg-secondary-subtle text-secondary",
+                                                    OrderStatus.Confirmed => "bg-primary-subtle text-primary",
+                                                    OrderStatus.Processing => "bg-warning-subtle text-warning",
+                                                    OrderStatus.Shipped => "bg-info-subtle text-info",
+                                                    OrderStatus.Delivered => "bg-success-subtle text-success",
+                                                    OrderStatus.Cancelled => "bg-danger-subtle text-danger",
+                                                    OrderStatus.Returned => "bg-dark-subtle text-dark",
+                                                    _ => "bg-secondary-subtle text-secondary"
+                                                };
+                                            }
+                                            <h4 class="fw-medium text-dark d-flex align-items-center gap-2">#@Model.Order.OrderNumber <span class="badge border @paymentStatusClass px-2 py-1 fs-13">@Model.Order.PaymentStatus</span><span class="border @orderStatusClass fs-13 px-2 py-1 rounded">@Model.Order.OrderStatus</span></h4>
+                                            <p class="mb-0">Order / Order Details / #@Model.Order.OrderNumber - @Model.Order.OrderDate.ToString("MMMM dd, yyyy 'at' h:mm tt")</p>
+                                        </div>
+                                        <div>
+                                            @if (Model.Order.OrderStatus != OrderStatus.Cancelled && Model.Order.OrderStatus != OrderStatus.Delivered && Model.Order.OrderStatus != OrderStatus.Returned)
+                                            {
+                                                <button type="button" onclick="cancelOrder(@Model.Order.OrderId)" class="btn btn-outline-danger">Cancel Order</button>
+                                                <form id="cancel-order-form-@Model.Order.OrderId" asp-action="CancelOrder" method="post" style="display:none;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="orderId" value="@Model.Order.OrderId" />
+                                                    <input type="hidden" name="adminNotes" value="Cancelled by admin" />
+                                                </form>
+                                            }
+                                            <a href="#!" class="btn btn-primary d-none">Edit Order</a>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="mt-4">
+                                        <h4 class="fw-medium text-dark">Progress</h4>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-4 justify-content-center text-center">
+                                        @foreach (var step in Model.Timeline)
+                                        {
+                                            var width = (step.IsCompleted || step.IsCurrent) ? "100%" : "0%";
+                                            var colorClass = step.IsCompleted ? "bg-success" : (step.IsCurrent ? "bg-primary progress-bar-animated" : "bg-secondary-subtle");
+                                            
+                                            <div class="flex-grow-1" style="max-width: 200px;">
+                                                <div class="progress mt-3" style="height: 10px;">
+                                                    <div class="progress-bar progress-bar-striped @colorClass" role="progressbar" style="width: @width"></div>
+                                                </div>
+                                                
+                                                <div class="mt-2">
+                                                    <p class="mb-0 fw-medium">@step.Label</p>
+                                                    @if (step.Timestamp.HasValue)
+                                                    {
+                                                        <small class="text-muted" style="font-size: 0.75rem;">
+                                                            @step.Timestamp.Value.ToLocalTime().ToString("MMM dd, h:mm tt")
+                                                        </small>
+                                                    }
+                                                    @if (step.IsCurrent && step.Status == OrderStatus.Processing)
+                                                    {
+                                                         <div class="spinner-border spinner-border-sm text-warning mt-1" role="status">
+                                                            <span class="visually-hidden">Loading...</span>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex flex-wrap align-items-center justify-content-between bg-light-subtle gap-2">
+                                    <p class="border rounded mb-0 px-2 py-1 bg-body"><i class='bx bx-arrow-from-left align-middle fs-16'></i> Estimated shipping date : <span class="text-dark fw-medium">@(Model.Order.ExpectedDeliveryDate?.ToString("MMM dd, yyyy") ?? "Processing")</span></p>
+                                    <div>
+                                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateStatusModal">Update Status</button>
+                                    </div>
+                                </div>
+                        </div>
+                        <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title">Product</h4>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table align-middle mb-0 table-hover table-centered">
+                                            <thead class="bg-light-subtle border-bottom">
+                                                    <tr>
+                                                        <th>Product Name & Size</th>
+                                                        <th>Status</th>
+                                                        <th>Quantity</th>
+                                                        <th>Price</th>
+                                                        <th>Tax</th>
+                                                        <th>Amount</th>
+                                                    </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in Model.Order.OrderItems)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex align-items-center gap-2">
+                                                                <div class="rounded bg-light avatar-md d-flex align-items-center justify-content-center">
+                                                                    <img src="@(string.IsNullOrEmpty(item.ProductImageUrl) ? "/uploads/default.png" : (item.ProductImageUrl.StartsWith("/") ? item.ProductImageUrl : "/" + item.ProductImageUrl))" alt="" class="avatar-md">
+                                                                </div>
+                                                                <div>
+                                                                    <a href="#!" class="text-dark fw-medium fs-15">@item.ProductName</a>
+                                                                    <p class="text-muted mb-0 mt-1 fs-13"><span>Style : </span>@item.StyleCode</p>
+                                                                </div>
+                                                            </div>
+
+                                                        </td>
+
+                                                        <td>
+                                                            <span class="badge border border-success text-success px-2 py-1 fs-13">Ready</span>
+                                                        </td>
+                                                        <td> @item.Quantity</td>
+                                                        <td>@item.UnitPrice.ToString("C")</td>
+                                                        <td> @item.TaxAmount.ToString("C")</td>
+                                                        <td>
+                                                            @item.Subtotal.ToString("C")
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                        </div>
+                        <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title">Order Timeline</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="position-relative ms-2">
+                                        <span class="position-absolute start-0 top-0 border border-dashed h-100"></span>
+                                        @foreach (var history in Model.Order.StatusHistories)
+                                        {
+                                            <div class="position-relative ps-4 mb-4">
+                                                <span class="position-absolute start-0 avatar-sm translate-middle-x bg-light d-inline-flex align-items-center justify-content-center rounded-circle">
+                                                    @switch (history.Status)
+                                                    {
+                                                        case OrderStatus.Delivered:
+                                                            <i class='bx bx-check-circle text-success fs-20'></i>
+                                                            break;
+                                                        case OrderStatus.Cancelled:
+                                                            <i class='bx bx-x-circle text-danger fs-20'></i>
+                                                            break;
+                                                        case OrderStatus.Shipped:
+                                                            <i class='bx bx-package text-info fs-20'></i>
+                                                            break;
+                                                        case OrderStatus.Processing:
+                                                            <i class='bx bx-cog text-warning fs-20'></i>
+                                                            break;
+                                                        default:
+                                                            <i class='bx bx-time text-primary fs-20'></i>
+                                                            break;
+                                                    }
+                                                </span>
+                                                <div class="ms-2 d-flex flex-wrap gap-2 align-items-center justify-content-between">
+                                                    <div>
+                                                        <h5 class="mb-1 text-dark fw-medium fs-15">@history.Status</h5>
+                                                        <p class="mb-0 text-muted fs-13">@history.Notes</p>
+                                                        <p class="mb-0 text-muted fs-12">Updated by @history.ChangedBy</p>
+                                                    </div>
+                                                    <p class="mb-0 text-muted fs-13">@history.CreatedAt.ToString("MMM dd, yyyy 'at' h:mm tt")</p>
+                                                </div>
+                                            </div>
+                                        }
+                                        @if (!Model.Order.StatusHistories.Any())
+                                        {
+                                            <div class="position-relative ps-4">
+                                                <div class="mb-4">
+                                                    <span class="position-absolute start-0 avatar-sm translate-middle-x bg-light d-inline-flex align-items-center justify-content-center rounded-circle">
+                                                        <i class='bx bx-time text-primary fs-20'></i>
+                                                    </span>
+                                                    <div class="ms-2">
+                                                        <h5 class="mb-1 text-dark fw-medium fs-15">No history available</h5>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                        </div>
+                        <div class="card bg-light-subtle">
+                                <div class="card-body">
+                                    <div class="row g-3 g-lg-0">
+                                        <div class="col-lg-3 border-end">
+                                            <div class="d-flex align-items-center gap-3 justify-content-between px-3">
+                                                    <div>
+                                                        <p class="text-dark fw-medium fs-16 mb-1">Method</p>
+                                                        <p class="mb-0">@Model.Order.PaymentMethod</p>
+                                                    </div>
+                                                    <div class="avatar bg-light d-flex align-items-center justify-content-center rounded">
+                                                        <iconify-icon icon="solar:shop-2-bold-duotone" class="fs-35 text-primary"></iconify-icon>
+                                                    </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 border-end">
+                                            <div class="d-flex align-items-center gap-3 justify-content-between px-3">
+                                                    <div>
+                                                        <p class="text-dark fw-medium fs-16 mb-1">Date</p>
+                                                        <p class="mb-0">@Model.Order.OrderDate.ToString("MMM dd, yyyy")</p>
+                                                    </div>
+                                                    <div class="avatar bg-light d-flex align-items-center justify-content-center rounded">
+                                                        <iconify-icon icon="solar:calendar-date-bold-duotone" class="fs-35 text-primary"></iconify-icon>
+                                                    </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3 border-end">
+                                            <div class="d-flex align-items-center gap-3 justify-content-between px-3">
+                                                    <div>
+                                                        <p class="text-dark fw-medium fs-16 mb-1">Customer</p>
+                                                        <p class="mb-0">@Model.Order.CustomerName</p>
+                                                    </div>
+                                                    <div class="avatar bg-light d-flex align-items-center justify-content-center rounded">
+                                                        <iconify-icon icon="solar:user-circle-bold-duotone" class="fs-35 text-primary"></iconify-icon>
+                                                    </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-3">
+                                            <div class="d-flex align-items-center gap-3 justify-content-between px-3">
+                                                    <div>
+                                                        <p class="text-dark fw-medium fs-16 mb-1">Order #</p>
+                                                        <p class="mb-0">#@Model.Order.OrderNumber</p>
+                                                    </div>
+                                                    <div class="avatar bg-light d-flex align-items-center justify-content-center rounded">
+                                                        <iconify-icon icon="solar:clipboard-text-bold-duotone" class="fs-35 text-primary"></iconify-icon>
+                                                    </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Order Summary</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                                <table class="table mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td class="px-0">
+                                                    <p class="d-flex mb-0 align-items-center gap-1"><iconify-icon icon="solar:clipboard-text-broken"></iconify-icon> Sub Total : </p>
+                                            </td>
+                                            <td class="text-end text-dark fw-medium px-0">@Model.Order.Subtotal.ToString("C")</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-0">
+                                                    <p class="d-flex mb-0 align-items-center gap-1"><iconify-icon icon="solar:ticket-broken" class="align-middle"></iconify-icon> Discount : </p>
+                                            </td>
+                                            <td class="text-end text-dark fw-medium px-0">-@Model.Order.DiscountAmount.ToString("C")</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-0">
+                                                    <p class="d-flex mb-0 align-items-center gap-1"><iconify-icon icon="solar:kick-scooter-broken" class="align-middle"></iconify-icon> Delivery Charge : </p>
+                                            </td>
+                                            <td class="text-end text-dark fw-medium px-0">@Model.Order.ShippingCharges.ToString("C")</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-0">
+                                                    <p class="d-flex mb-0 align-items-center gap-1"><iconify-icon icon="solar:calculator-minimalistic-broken" class="align-middle"></iconify-icon> Estimated Tax (3%) : </p>
+                                            </td>
+                                            <td class="text-end text-dark fw-medium px-0">@Model.Order.TaxAmount.ToString("C")</td>
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center justify-content-between bg-light-subtle">
+                        <div>
+                                <p class="fw-medium text-dark mb-0">Total Amount</p>
+                        </div>
+                        <div>
+                                <p class="fw-medium text-dark mb-0">@Model.Order.TotalAmount.ToString("C")</p>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Payment Information</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="rounded-3 bg-light avatar d-flex align-items-center justify-content-center">
+                                    <iconify-icon icon="solar:card-2-bold-duotone" class="fs-35 text-primary"></iconify-icon>
+                                </div>
+                                <div>
+                                    <p class="mb-1 text-dark fw-medium">@Model.Order.PaymentMethod</p>
+                                    @if (!string.IsNullOrEmpty(Model.Order.CardNumberLastFour))
+                                    {
+                                        <p class="mb-0 text-dark">xxxx xxxx xxxx @Model.Order.CardNumberLastFour</p>
+                                    }
+                                </div>
+                                <div class="ms-auto">
+                                    @if (Model.Order.PaymentStatus == "Completed")
+                                    {
+                                        <iconify-icon icon="solar:check-circle-broken" class="fs-22 text-success"></iconify-icon>
+                                    }
+                                    else
+                                    {
+                                        <iconify-icon icon="solar:clock-circle-broken" class="fs-22 text-warning"></iconify-icon>
+                                    }
+                                </div>
+                        </div>
+                        <p class="text-dark mb-1 fw-medium">Transaction ID : <span class="text-muted fw-normal fs-13"> #@(Model.Order.TransactionId ?? "N/A")</span></p>
+                        <p class="text-dark mb-0 fw-medium">Card Holder Name : <span class="text-muted fw-normal fs-13"> @(Model.Order.CardHolderName ?? Model.Order.CustomerName)</span></p>
+
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Customer Details</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center gap-2">
+                                <div class="avatar bg-soft-primary d-flex align-items-center justify-content-center rounded-3 border border-light border-3">
+                                    <img src="@(Model.Order.ProfilePictureUrl ?? "/uploads/default.png")" alt="@Model.Order.CustomerName" class="avatar-md">
+                                </div>
+                                <div>
+                                    <p class="mb-1">@Model.Order.CustomerName</p>
+                                    <a href="#!" class="link-primary fw-medium">@Model.Order.Email</a>
+                                </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-3">
+                                <h5 class="">Contact Number</h5>
+                        </div>
+                        <p class="mb-1">@Model.Order.PhoneNumber</p>
+
+                        <div class="d-flex justify-content-between mt-3">
+                                <h5 class="">Shipping Address</h5>
+                        </div>
+
+                        <div>
+                                <p class="mb-1">@Model.Order.ShippingAddress</p>
+                                <p class="mb-1">@Model.Order.ShippingCity, @Model.Order.ShippingState @Model.Order.ShippingPostalCode</p>
+                                <p class="mb-1">@Model.Order.ShippingCountry</p>
+                                <p class="">@Model.Order.PhoneNumber</p>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-3">
+                                <h5 class="">Billing Address</h5>
+                        </div>
+
+                        @if (Model.Order.BillingAddressSameAsShipping)
+                        {
+                            <p class="mb-1">Same as shipping address</p>
+                        }
+                        else
+                        {
+                            <div>
+                                <p class="mb-1">@Model.Order.BillingAddress</p>
+                                <p class="mb-1">@Model.Order.BillingCity, @Model.Order.BillingState @Model.Order.BillingPostalCode</p>
+                                <p class="mb-1">@Model.Order.BillingCountry</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mapouter">
+                            @{
+                                var encodedAddress = System.Net.WebUtility.UrlEncode($"{Model.Order.ShippingAddress}, {Model.Order.ShippingCity}, {Model.Order.ShippingCountry}");
+                            }
+                            <div class="gmap_canvas"><iframe class="gmap_iframe rounded" width="100%" style="height: 418px;" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?width=1980&amp;height=400&amp;hl=en&amp;q=@(encodedAddress)&amp;t=&amp;z=14&amp;ie=UTF8&amp;iwloc=B&amp;output=embed"></iframe></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+<!-- Update Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateStatusModalLabel">Update Order Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="@Url.Action("UpdateOrderStatus", "Order")" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="orderId" value="@Model.Order.OrderId" />
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="orderStatus" class="form-label">Order Status</label>
+                        <select class="form-select" id="orderStatus" name="orderStatus">
+                            @foreach (OrderStatus status in Enum.GetValues(typeof(OrderStatus)))
+                            {
+                                <option value="@status" selected="@(Model.Order.OrderStatus == status)">@status</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="trackingNumber" class="form-label">Tracking Number</label>
+                        <input type="text" class="form-control" id="trackingNumber" name="trackingNumber" value="@Model.Order.TrackingNumber">
+                    </div>
+                    <div class="mb-3">
+                        <label for="courierService" class="form-label">Courier Service</label>
+                        <input type="text" class="form-control" id="courierService" name="courierService" value="@Model.Order.CourierService">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="updateOrderStatus(this)">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12 text-center p-5">
+                <div class="card">
+                    <div class="card-body">
+                        <iconify-icon icon="solar:danger-bold-duotone" class="fs-60 text-danger mb-3"></iconify-icon>
+                        <h4 class="text-dark">Order Not Found</h4>
+                        <p class="text-muted">The requested order could not be located or you don't have permission to view it.</p>
+                        <a href="@Url.Action("Index", "Order")" class="btn btn-primary mt-3">Back to Orders</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<!-- End Container Fluid -->
+
+@section Scripts {
+    <script>
+        function cancelOrder(orderId) {
+            AdminPanel.confirmAction({
+                title: 'Cancel Order?',
+                text: "This will restore stock and cannot be undone!",
+                confirmButtonText: 'Yes, cancel it!',
+                confirmButtonColor: '#d33'
+            }, function() {
+                var $form = $('#cancel-order-form-' + orderId);
+                $.post($form.attr('action'), $form.serialize(), function(response) {
+                    AdminPanel.handleResponse(response, function() {
+                        location.reload();
+                    });
+                });
+            });
+        }
+
+        function updateOrderStatus(btn) {
+            var $btn = $(btn);
+            var $form = $btn.closest('form');
+            var originalText = $btn.text();
+            
+            $btn.prop('disabled', true).text('Updating...');
+
+            $.post($form.attr('action'), $form.serialize(), function(response) {
+                AdminPanel.handleResponse(response, function() {
+                    location.reload();
+                });
+            }).fail(function() {
+                AdminPanel.showToast("Failed to update order status.", "danger");
+            }).always(function() {
+                $btn.prop('disabled', false).text(originalText);
+            });
+        }
+    </script>
+}

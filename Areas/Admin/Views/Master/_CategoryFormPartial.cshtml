@@ -1,0 +1,75 @@
+@model Yash_Gems___Jewelleries.ViewModels.CategoryViewModel
+
+<form id="categoryForm" asp-area="Admin" asp-controller="Master" asp-action="Save" method="post" enctype="multipart/form-data">
+    <div class="modal-header">
+        <h5 class="modal-title">@(Model.CategoryId > 0 ? "Edit" : "Add") Category</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <div class="modal-body">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="CategoryId" asp-for="CategoryId" value="@Model.CategoryId" />
+        <input type="hidden" name="ExistingImageUrl" asp-for="ExistingImageUrl" value="@Model.ExistingImageUrl" />
+        <input type="hidden" name="entityType" id="entityType" value="category" />
+        <input type="hidden" name="RowVersion" asp-for="RowVersion" />
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label asp-for="CategoryName" class="form-label">Category Name</label>
+                    <input name="CategoryName" asp-for="CategoryName" class="form-control" placeholder="e.g. Rings, Necklaces" value="@Model.CategoryName">
+                    <span asp-validation-for="CategoryName" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label asp-for="Stock" class="form-label">Initial Stock</label>
+                    <input name="Stock" asp-for="Stock" class="form-control" type="number" min="0" value="@Model.Stock">
+                    <span asp-validation-for="Stock" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Description</label>
+                    <textarea name="Description" asp-for="Description" class="form-control bg-light-subtle" rows="4" placeholder="Type category description">@Model.Description</textarea>
+                    <span asp-validation-for="Description" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="mb-3">
+                    <label class="form-label">Category Image</label>
+                    <div class="dropzone dz-clickable border-dashed border-2 rounded-3 text-center" id="categoryImageUploadZone" style="cursor: pointer; min-height: 150px; display: flex; align-items: center; justify-content: center;">
+                        <input name="ImageFile" id="ImageFile" class="d-none" type="file" accept="image/*" />
+                        
+                        <div id="uploadIconGroup" class="dz-message needsclick upload-icon-group @(string.IsNullOrEmpty(Model.ExistingImageUrl) ? "" : "d-none")">
+                            <i class="bx bx-cloud-upload fs-48 text-primary"></i>
+                            <h4 class="mt-3">Click to upload category image</h4>
+                            <span class="text-muted fs-13">PNG, JPG and GIF supported</span>
+                        </div>
+
+                        <div id="previewContainer" class="preview-container @(string.IsNullOrEmpty(Model.ExistingImageUrl) ? "d-none" : "")">
+                            <img id="imagePreview" src="@(string.IsNullOrEmpty(Model.ExistingImageUrl) ? "#" : (Model.ExistingImageUrl.StartsWith("/") ? Model.ExistingImageUrl : "/" + Model.ExistingImageUrl))" class="rounded border bg-white p-1 image-preview" style="width: 100px; height: 100px; object-fit: contain; @(string.IsNullOrEmpty(Model.ExistingImageUrl) ? "display: none;" : "display: block;") margin: 0 auto;" />
+                            <p class="text-primary mt-2 mb-0 fs-12">Click to change image</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="form-check form-switch mb-3">
+                    <input asp-for="IsActive" value="true" class="form-check-input" type="checkbox" role="switch" />
+                    <label asp-for="IsActive" class="form-check-label fw-medium">Active Status</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer border-top">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary" id="btnSaveCategory">
+            <span class="spinner-border spinner-border-sm d-none" id="saveSpinner" role="status"></span>
+            <span id="saveText">Save Category</span>
+        </button>
+    </div>
+</form>
+
+

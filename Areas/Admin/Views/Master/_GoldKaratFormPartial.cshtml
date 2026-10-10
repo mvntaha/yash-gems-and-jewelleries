@@ -1,0 +1,54 @@
+@model Yash_Gems___Jewelleries.ViewModels.GoldKaratViewModel
+
+<form id="goldKaratForm" asp-area="Admin" asp-controller="Master" asp-action="Save" method="post">
+    <div class="modal-header">
+        <h5 class="modal-title">@(Model.Id > 0 ? "Edit" : "Add") Gold Karat</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <div class="modal-body">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="Id" asp-for="Id" value="@Model.Id" />
+        <input type="hidden" name="entityType" id="entityType" value="goldkarat" />
+        <input type="hidden" name="RowVersion" asp-for="RowVersion" />
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label asp-for="GoldCarat" class="form-label">Karat / Purity Type</label>
+                    <input name="GoldCarat" asp-for="GoldCarat" class="form-control" placeholder="e.g. 24K, 22K (916), 18K" value="@Model.GoldCarat">
+                    <span asp-validation-for="GoldCarat" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label asp-for="PurityPercentage" class="form-label">Purity Percentage (%)</label>
+                    <input name="PurityPercentage" asp-for="PurityPercentage" class="form-control" type="number" step="0.01" min="0" max="100" value="@Model.PurityPercentage">
+                    <span asp-validation-for="PurityPercentage" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Description</label>
+                    <textarea name="Description" asp-for="Description" class="form-control bg-light-subtle" rows="4" placeholder="Type technical description">@Model.Description</textarea>
+                    <span asp-validation-for="Description" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="form-check form-switch mb-3">
+                    <input asp-for="IsActive" value="true" class="form-check-input" type="checkbox" role="switch" />
+                    <label asp-for="IsActive" class="form-check-label fw-medium">Active Status</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer border-top">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary" id="btnSaveGoldKarat">
+            <span class="spinner-border spinner-border-sm d-none" id="saveSpinner" role="status"></span>
+            <span id="saveText">Save Gold Karat</span>
+        </button>
+    </div>
+</form>
+

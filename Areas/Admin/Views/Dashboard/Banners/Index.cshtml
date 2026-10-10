@@ -1,0 +1,37 @@
+@model IEnumerable<Yash_Gems___Jewelleries.Models.Banner>
+@{
+    ViewData["Title"] = "Banners";
+}
+
+<div class="container-xxl">
+    @await Html.PartialAsync("Banners/_BannerTablePartial", Model)
+</div>
+
+<!-- Banner Modal -->
+<div class="modal fade" id="bannerModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div id="bannerModalBody">
+                <div class="modal-body text-center p-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- DataTable JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+    
+    <script src="~/js/admin/banner-management.js"></script>
+}
+
+@section Styles {
+    <!-- DataTable CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" />
+}

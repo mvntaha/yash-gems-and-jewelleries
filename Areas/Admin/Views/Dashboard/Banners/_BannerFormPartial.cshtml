@@ -1,0 +1,102 @@
+@model Yash_Gems___Jewelleries.ViewModels.BannerViewModel
+
+<form id="bannerForm" asp-area="Admin" asp-controller="Dashboard" asp-action="SaveBanner" method="post" enctype="multipart/form-data">
+    <div class="modal-header">
+        <h5 class="modal-title">@(Model.BannerId > 0 ? "Edit" : "Add") Banner</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <div class="modal-body">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="BannerId" asp-for="BannerId" value="@Model.BannerId" />
+        <input type="hidden" name="ExistingImageUrl" asp-for="ExistingImageUrl" value="@Model.ExistingImageUrl" />
+        <input type="hidden" name="ExistingMobileImageUrl" asp-for="ExistingMobileImageUrl" value="@Model.ExistingMobileImageUrl" />
+        <input type="hidden" name="RowVersion" asp-for="RowVersion" />
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label">Banner Title <span class="text-danger">*</span></label>
+                    <input name="Title" asp-for="Title" class="form-control" placeholder="e.g. Summer Collection 2026" value="@Model.Title">
+                    <span asp-validation-for="Title" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label asp-for="BannerType" class="form-label">Banner Type</label>
+                    <input type="text" class="form-control bg-light" value="@Model.BannerType" readonly />
+                    <input type="hidden" asp-for="BannerType" />
+                    <span asp-validation-for="BannerType" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="mb-3">
+                    <label asp-for="DiscountSchemeId" class="form-label">Attached Discount Scheme (Optional)</label>
+                    <select asp-for="DiscountSchemeId" name="DiscountSchemeId" asp-items="Model.DiscountSchemes" class="form-select @(Model.BannerType == Yash_Gems___Jewelleries.Models.Enums.BannerType.NewIn ? "bg-light" : "")" disabled="@(Model.BannerType == Yash_Gems___Jewelleries.Models.Enums.BannerType.NewIn)">
+                        <option value="">No Discount Scheme</option>
+                    </select>
+                    <span asp-validation-for="DiscountSchemeId" class="text-danger fs-12"></span>
+                    @if (Model.BannerType == Yash_Gems___Jewelleries.Models.Enums.BannerType.NewIn)
+                    {
+                        <small class="text-muted">Discount schemes can only be attached to Promotional banners.</small>
+                    }
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Description</label>
+                    <textarea name="Description" asp-for="Description" class="form-control bg-light-subtle" rows="3" placeholder="Type banner description">@Model.Description</textarea>
+                    <span asp-validation-for="Description" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label asp-for="ButtonText" class="form-label">Button Text</label>
+                    <input name="ButtonText" asp-for="ButtonText" class="form-control" placeholder="e.g. Shop Now" value="@Model.ButtonText">
+                    <span asp-validation-for="ButtonText" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label asp-for="ButtonLink" class="form-label">Button Link</label>
+                    <input asp-for="ButtonLink" type="text" class="form-control" placeholder="e.g. /Shop or https://example.com">
+                    <span asp-validation-for="ButtonLink" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="mb-3">
+                    <label class="form-label">Banner Image @(Model.BannerId == 0 ? "(Required)" : "(Optional)")</label>
+                    <div class="dropzone dz-clickable border-dashed border-2 rounded-3 text-center" id="imageUploadZone" style="cursor: pointer; min-height: 150px; display: flex; align-items: center; justify-content: center;">
+                        <input name="ImageFile" id="ImageFile" class="d-none" type="file" accept="image/*" />
+                        
+                        <div id="uploadIconGroup" class="dz-message needsclick upload-icon-group @(string.IsNullOrEmpty(Model.ExistingImageUrl) ? "" : "d-none")">
+                            <i class="bx bx-cloud-upload fs-48 text-primary"></i>
+                            <h4 class="mt-3">Click to upload banner image</h4>
+                            <span class="text-muted fs-13">PNG, JPG and GIF supported (Recommended: 1920x600px)</span>
+                        </div>
+
+                        <div id="previewContainer" class="preview-container @(string.IsNullOrEmpty(Model.ExistingImageUrl) ? "d-none" : "")">
+                            <img id="imagePreview" src="@(string.IsNullOrEmpty(Model.ExistingImageUrl) ? "#" : (Model.ExistingImageUrl.StartsWith("/") ? Model.ExistingImageUrl : "/" + Model.ExistingImageUrl))" class="rounded border bg-white p-1 image-preview" style="max-width: 300px; max-height: 150px; object-fit: contain; @(string.IsNullOrEmpty(Model.ExistingImageUrl) ? "display: none;" : "display: block;") margin: 0 auto;" />
+                            <p class="text-primary mt-2 mb-0 fs-12">Click to change image</p>
+                        </div>
+                    </div>
+                    <span asp-validation-for="ImageFile" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="form-check form-switch mb-3">
+                    <input asp-for="IsActive" value="true" class="form-check-input" type="checkbox" role="switch" />
+                    <label asp-for="IsActive" class="form-check-label fw-medium">Active Status</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer border-top">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary" id="btnSaveBanner">
+            <span class="spinner-border spinner-border-sm d-none" id="saveSpinner" role="status"></span>
+            <span id="saveText">Save Banner</span>
+        </button>
+    </div>
+</form>

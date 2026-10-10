@@ -1,0 +1,55 @@
+@model Yash_Gems___Jewelleries.ViewModels.CertificateViewModel
+
+<form id="certificateForm" asp-area="Admin" asp-controller="Master" asp-action="Save" method="post">
+    <div class="modal-header">
+        <h5 class="modal-title">@(Model.CertificateId > 0 ? "Edit" : "Add") Certificate</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+
+    <div class="modal-body">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="CertificateId" asp-for="CertificateId" value="@Model.CertificateId" />
+        <input type="hidden" name="entityType" id="entityType" value="certificate" />
+        <input type="hidden" name="RowVersion" asp-for="RowVersion" />
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label asp-for="CertifyType" class="form-label">Certificate Type</label>
+                    <input name="CertifyType" asp-for="CertifyType" class="form-control" placeholder="e.g. BIS 916, IGI, GIA" value="@Model.CertifyType">
+                    <span asp-validation-for="CertifyType" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label asp-for="IssuingAuthority" class="form-label">Issuing Authority</label>
+                    <input name="IssuingAuthority" asp-for="IssuingAuthority" class="form-control" placeholder="e.g. Bureau of Indian Standards" value="@Model.IssuingAuthority">
+                    <span asp-validation-for="IssuingAuthority" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Description</label>
+                    <textarea name="Description" asp-for="Description" class="form-control bg-light-subtle" rows="4" placeholder="Type certificate description">@Model.Description</textarea>
+                    <span asp-validation-for="Description" class="text-danger fs-12"></span>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="form-check form-switch mb-3">
+                    <input asp-for="IsActive" value="true" class="form-check-input" type="checkbox" role="switch" />
+                    <label asp-for="IsActive" class="form-check-label fw-medium">Active Status</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer border-top">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary" id="btnSaveCertificate">
+            <span class="spinner-border spinner-border-sm d-none" id="saveSpinner" role="status"></span>
+            <span id="saveText">Save Certificate</span>
+        </button>
+    </div>
+</form>
+
+

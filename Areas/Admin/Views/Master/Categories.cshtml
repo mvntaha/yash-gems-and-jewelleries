@@ -1,0 +1,28 @@
+@model IEnumerable<Yash_Gems___Jewelleries.Models.Masters.Category>
+
+<div class="card border-0 shadow-none mb-0">
+    <div class="card-header border-bottom-0 pb-0 d-flex justify-content-between align-items-center gap-1">
+        <h4 class="card-title flex-grow-1">All Categories List</h4>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0 table-hover table-centered" id="masterTable">
+                <thead class="bg-light-subtle">
+                    <tr>
+                        <th>ID</th>
+                        <th>Category Name</th>
+                        <th>Description</th>
+                        <th>Stock</th>
+                        <th>Products</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="categoryTableBody">
+                    @await Html.PartialAsync("_CategoryTableRowsPartial", Model)
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

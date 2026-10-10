@@ -1,0 +1,90 @@
+@model IEnumerable<Yash_Gems___Jewelleries.Models.NewsletterSubscription>
+@{
+    ViewData["Title"] = "Newsletter Subscriptions";
+}
+
+<div class="container-xxl">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h4 class="card-title">Newsletter Subscriptions</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table align-middle tbl-admin mb-0" id="newsletterTable">
+                            <thead class="bg-light-subtle">
+                                <tr>
+                                    <th>#ID</th>
+                                    <th>Email</th>
+                                    <th>Full Name</th>
+                                    <th>Source</th>
+                                    <th>Status</th>
+                                    <th>Subscribed Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    int i = 1;
+                                    foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>@i</td>
+                                            <td>@item.Email</td>
+                                            <td>@(item.FullName ?? "-")</td>
+                                            <td>@(item.Source ?? "-")</td>
+                                            <td>
+                                                @if (item.IsSubscribed)
+                                                {
+                                                    <span class="badge border border-success text-success px-2 py-1 fs-13">Subscribed</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge border border-danger text-danger px-2 py-1 fs-13">Unsubscribed</span>
+                                                }
+                                            </td>
+                                            <td>@item.SubscribedDate.ToString("MMM dd, yyyy HH:mm")</td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">No subscriptions found.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if ($('#newsletterTable').length && $.fn.DataTable) {
+                $('#newsletterTable').DataTable({
+                    pageLength: 20,
+                    language: {
+                        paginate: {
+                            previous: "<i class='bx bx-chevron-left'></i>",
+                            next: "<i class='bx bx-chevron-right'></i>"
+                        }
+                    },
+                    drawCallback: function () {
+                        $('.dataTables_paginate > .pagination').addClass('pagination-rounded');
+                    }
+                });
+            }
+        });
+    </script>
+}

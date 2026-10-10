@@ -1,0 +1,97 @@
+    @model Yash_Gems___Jewelleries.ViewModels.BrandViewModel
+
+    <form id="brandForm" asp-area="Admin" asp-controller="Master" asp-action="Save" method="post" enctype="multipart/form-data">
+        <div class="modal-header">
+            <h5 class="modal-title">@(Model.BrandId > 0 ? "Edit" : "Add") Brand</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="BrandId" asp-for="BrandId" value="@Model.BrandId" />
+            <input type="hidden" name="ExistingLogoUrl" asp-for="ExistingLogoUrl" value="@Model.ExistingLogoUrl" />
+            <input type="hidden" name="entityType" id="entityType" value="brand" />
+            <input type="hidden" name="RowVersion" asp-for="RowVersion" />
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label asp-for="BrandType" class="form-label">Brand Name</label>
+                        <input name="BrandType" asp-for="BrandType" class="form-control" placeholder="e.g. Rolex" value="@Model.BrandType">
+                        <span asp-validation-for="BrandType" class="text-danger fs-12"></span>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label">Email Address</label>
+                        <input name="Email" asp-for="Email" class="form-control" placeholder="brand@example.com" value="@Model.Email">
+                        <span asp-validation-for="Email" class="text-danger fs-12"></span>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                        <input name="PhoneNumber" asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" value="@Model.PhoneNumber">
+                        <span asp-validation-for="PhoneNumber" class="text-danger fs-12"></span>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="mb-3">
+                        <label asp-for="Website" class="form-label">Website</label>
+                        <input name="Website" type="url" asp-for="Website" class="form-control" placeholder="www.brand.com" value="@Model.Website">
+                        <span asp-validation-for="Website" class="text-danger fs-12"></span>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="mb-3">
+                        <label asp-for="Location" class="form-label">Location</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><iconify-icon icon="solar:map-point-broken"></iconify-icon></span>
+                            <input name="Location" asp-for="Location" class="form-control" placeholder="City, Country" value="@Model.Location">
+                        </div>
+                        <span asp-validation-for="Location" class="text-danger fs-12"></span>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label">Description</label>
+                        <textarea name="Description" asp-for="Description" class="form-control bg-light-subtle" rows="4" placeholder="Type brand description">@Model.Description</textarea>
+                        <span asp-validation-for="Description" class="text-danger fs-12"></span>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="mb-3">
+                        <label class="form-label">Brand Logo</label>
+                        <div class="dropzone dz-clickable border-dashed border-2 rounded-3 text-center" id="logoUploadZone" style="cursor: pointer; min-height: 150px; display: flex; align-items: center; justify-content: center;">
+                            <input name="LogoFile" id="LogoFile" class="d-none" type="file" accept="image/*" />
+                            
+                            <div id="uploadIconGroup" class="dz-message needsclick upload-icon-group @(string.IsNullOrEmpty(Model.ExistingLogoUrl) ? "" : "d-none")">
+                                <i class="bx bx-cloud-upload fs-48 text-primary"></i>
+                                <h4 class="mt-3">Click to upload brand logo</h4>
+                                <span class="text-muted fs-13">PNG, JPG and GIF supported</span>
+                            </div>
+
+                            <div id="previewContainer" class="preview-container @(string.IsNullOrEmpty(Model.ExistingLogoUrl) ? "d-none" : "")">
+                                <img id="logoPreview" src="@(string.IsNullOrEmpty(Model.ExistingLogoUrl) ? "#" : (Model.ExistingLogoUrl.StartsWith("/") ? Model.ExistingLogoUrl : "/" + Model.ExistingLogoUrl))" class="rounded border bg-white p-1 image-preview" style="width: 100px; height: 100px; object-fit: contain; @(string.IsNullOrEmpty(Model.ExistingLogoUrl) ? "display: none;" : "display: block;") margin: 0 auto;" />
+                                <p class="text-primary mt-2 mb-0 fs-12">Click to change logo</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="form-check form-switch mb-3">
+                        <input asp-for="IsActive" value="true" class="form-check-input" type="checkbox" role="switch" />
+                        <label asp-for="IsActive" class="form-check-label fw-medium">Active Status</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer border-top">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary" id="btnSaveBrand">
+                <span class="spinner-border spinner-border-sm d-none" id="saveSpinner" role="status"></span>
+                <span id="saveText">Save Brand</span>
+            </button>
+        </div>
+    </form>

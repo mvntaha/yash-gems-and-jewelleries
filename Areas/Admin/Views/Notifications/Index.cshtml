@@ -1,0 +1,246 @@
+@model List<Yash_Gems___Jewelleries.Models.Notification>
+@using Yash_Gems___Jewelleries.Models.Enums
+@{
+    ViewData["Title"] = "Notifications";
+    int totalPages = ViewBag.TotalPages ?? 0;
+    int pageIndex = ViewBag.PageIndex ?? 1;
+}
+
+<div class="container-xxl">
+    @Html.AntiForgeryToken()
+    <partial name="_Notifications" />
+    <div class="row">
+        <div class="col-xl-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center gap-1">
+                    <h4 class="card-title flex-grow-1">Notifications</h4>
+                    <div class="dropdown">
+                        <a href="#" class="dropdown-toggle btn btn-sm btn-outline-light" data-bs-toggle="dropdown" aria-expanded="false">
+                            @(ViewBag.Type?.ToString() ?? "All Types")
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a href="@Url.Action("Index", new { isRead = ViewBag.IsRead, type = (NotificationType?)null })" class="dropdown-item @(ViewBag.Type == null ? "active" : "")">All Types</a>
+                            @foreach (var type in Enum.GetValues(typeof(NotificationType)))
+                            {
+                                <a href="@Url.Action("Index", new { isRead = ViewBag.IsRead, type = type })" class="dropdown-item @(ViewBag.Type?.ToString() == type.ToString() ? "active" : "")">@type</a>
+                            }
+                        </div>
+                    </div>
+                    <div class="dropdown">
+                        <a href="#" class="dropdown-toggle btn btn-sm btn-outline-light" data-bs-toggle="dropdown" aria-expanded="false">
+                            @if (ViewBag.IsRead == null)
+                            {
+                                <text>All Status</text>
+                            }
+                            else if (ViewBag.IsRead == false)
+                            {
+                                <text>Unread</text>
+                            }
+                            else
+                            {
+                                <text>Read</text>
+                            }
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a href="@Url.Action("Index", new { isRead = (bool?)null, type = ViewBag.Type })" class="dropdown-item @(ViewBag.IsRead == null ? "active" : "")">All</a>
+                            <a href="@Url.Action("Index", new { isRead = false, type = ViewBag.Type })" class="dropdown-item @(ViewBag.IsRead == false ? "active" : "")">Unread</a>
+                            <a href="@Url.Action("Index", new { isRead = true, type = ViewBag.Type })" class="dropdown-item @(ViewBag.IsRead == true ? "active" : "")">Read</a>
+                        </div>
+                    </div>
+                    <button id="markAllReadBtn" class="btn btn-primary btn-sm">Mark All as Read</button>
+                </div>
+                <div>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0 table-hover table-centered">
+                            <thead class="bg-light-subtle">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Message</th>
+                                    <th>Type</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Any())
+                                {
+                                    foreach (var notification in Model)
+                                    {
+                                        <tr class="@(notification.IsRead ? "" : "fw-bold bg-light-subtle")">
+                                            <td>@notification.Title</td>
+                                            <td>@notification.Message</td>
+                                            <td>
+                                                @switch (notification.Type)
+                                                {
+                                                    case NotificationType.NewOrder:
+                                                        <span class="badge border border-success text-success px-2 py-1 fs-13">Order</span>
+                                                        break;
+                                                    case NotificationType.OrderStatusUpdate:
+                                                        <span class="badge border border-info text-info px-2 py-1 fs-13">Update</span>
+                                                        break;
+                                                    case NotificationType.NewCustomerRegistration:
+                                                        <span class="badge border border-primary text-primary px-2 py-1 fs-13">User</span>
+                                                        break;
+                                                    case NotificationType.InquirySubmission:
+                                                        <span class="badge border border-warning text-warning px-2 py-1 fs-13">Inquiry</span>
+                                                        break;
+                                                    case NotificationType.LowInventoryThreshold:
+                                                        <span class="badge border border-danger text-danger px-2 py-1 fs-13">Stock</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge border border-secondary text-secondary px-2 py-1 fs-13">System</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>@notification.CreatedAt.ToString("dd MMM, yyyy HH:mm")</td>
+                                            <td>
+                                                @if (notification.IsRead)
+                                                {
+                                                    <span class="text-success"><i class="bx bx-check-double me-1"></i>Read</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-warning"><i class="bx bx-error-circle me-1"></i>Unread</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="d-flex gap-2">
+                                                    @{
+                                                        string? url = "#";
+                                                        if (!string.IsNullOrEmpty(notification.ReferenceId))
+                                                        {
+                                                            switch (notification.Type)
+                                                            {
+                                                                case NotificationType.NewOrder:
+                                                                case NotificationType.OrderStatusUpdate:
+                                                                    url = Url.Action("Detail", "Order", new { id = notification.ReferenceId });
+                                                                    break;
+                                                                case NotificationType.InquirySubmission:
+                                                                    url = Url.Action("Index", "Inquiries", new { area = "Admin" });
+                                                                    break;
+                                                                case NotificationType.NewCustomerRegistration:
+                                                                    url = Url.Action("Detail", "Customer", new { id = notification.ReferenceId });
+                                                                    break;
+                                                            }
+                                                        }
+                                                    }
+                                                    <a href="@url" class="btn btn-light btn-sm view-notification" data-id="@notification.Id" title="View Detail">
+                                                        <iconify-icon icon="solar:eye-broken" class="align-middle fs-18"></iconify-icon>
+                                                    </a>
+                                                    @if (!notification.IsRead)
+                                                    {
+                                                        <button class="btn btn-soft-success btn-sm mark-read" data-id="@notification.Id" title="Mark Read">
+                                                            <iconify-icon icon="solar:check-read-broken" class="align-middle fs-18"></iconify-icon>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center p-4">
+                                            <div class="text-muted">No notifications found.</div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- end table-responsive -->
+                </div>
+                @if (totalPages > 1)
+                {
+                    <div class="card-footer border-top">
+                        <nav aria-label="Page navigation example">
+                            <ul class="pagination justify-content-end mb-0">
+                                <li class="page-item @(pageIndex <= 1 ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { pageIndex = pageIndex - 1, isRead = ViewBag.IsRead, type = ViewBag.Type })">Previous</a>
+                                </li>
+                                @{
+                                    int maxPagesToShow = 5;
+                                    int startPage = Math.Max(1, pageIndex - (maxPagesToShow / 2));
+                                    int endPage = Math.Min(totalPages, startPage + maxPagesToShow - 1);
+
+                                    if (endPage - startPage + 1 < maxPagesToShow)
+                                    {
+                                        startPage = Math.Max(1, endPage - maxPagesToShow + 1);
+                                    }
+                                    startPage = Math.Max(1, startPage);
+                                }
+
+                                @if (startPage > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Index", new { pageIndex = 1, isRead = ViewBag.IsRead, type = ViewBag.Type })">1</a>
+                                    </li>
+                                    @if (startPage > 2)
+                                    {
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    }
+                                }
+
+                                @for (int i = startPage; i <= endPage; i++)
+                                {
+                                    <li class="page-item @(i == pageIndex ? "active" : "")">
+                                        <a class="page-link" href="@Url.Action("Index", new { pageIndex = i, isRead = ViewBag.IsRead, type = ViewBag.Type })">@i</a>
+                                    </li>
+                                }
+
+                                @if (endPage < totalPages)
+                                {
+                                    @if (endPage < totalPages - 1)
+                                    {
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    }
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Index", new { pageIndex = totalPages, isRead = ViewBag.IsRead, type = ViewBag.Type })">@totalPages</a>
+                                    </li>
+                                }
+
+                                <li class="page-item @(pageIndex >= totalPages ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { pageIndex = pageIndex + 1, isRead = ViewBag.IsRead, type = ViewBag.Type })">Next</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.mark-read').click(function () {
+                const id = $(this).data('id');
+                const btn = $(this);
+                $.post('@Url.Action("MarkAsRead")', { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() }, function (response) {
+                    if (response.success) {
+                        btn.closest('tr').find('.text-warning').replaceWith('<span class="text-success"><i class="bx bx-check-double me-1"></i>Read</span>');
+                        btn.closest('tr').removeClass('fw-bold bg-light-subtle');
+                        btn.remove();
+                    }
+                });
+            });
+
+            $('#markAllReadBtn').click(function () {
+                $.post('@Url.Action("MarkAllAsRead")', { __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() }, function (response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                });
+            });
+            
+            $('.view-notification').click(function(e) {
+                const id = $(this).data('id');
+                $.post('@Url.Action("MarkAsRead")', { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() });
+            });
+        });
+    </script>
+}

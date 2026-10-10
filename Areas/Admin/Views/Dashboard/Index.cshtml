@@ -1,0 +1,375 @@
+@model Yash_Gems___Jewelleries.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<!-- Start Container Fluid -->
+<div class="container-fluid">
+    <!-- Start here.... -->
+    <div class="row">
+        <div class="col-xxl-5">
+            <div class="row">
+
+                <div class="col-md-6">
+                    <div class="card overflow-hidden">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="avatar-md bg-soft-primary rounded">
+                                        <iconify-icon icon="solar:cart-5-bold-duotone" class="avatar-title fs-32 text-primary"></iconify-icon>
+                                    </div>
+                                </div> <!-- end col -->
+                                <div class="col-6 text-end">
+                                    <p class="text-muted mb-0 text-truncate">Total Orders</p>
+                                    <h3 class="text-dark mt-1 mb-0">@Model.TotalOrders.ToString("N0")</h3>
+                                </div> <!-- end col -->
+                            </div> <!-- end row-->
+                        </div> <!-- end card body -->
+                        <div class="card-footer py-2 bg-light bg-opacity-50">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    @if(Model.OrdersGrowth >= 0)
+                                    {
+                                        <span class="text-success"> <i class="bx bxs-up-arrow fs-12"></i> @Model.OrdersGrowth.ToString("0.0")%</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger"> <i class="bx bxs-down-arrow fs-12"></i> @Math.Abs(Model.OrdersGrowth).ToString("0.0")%</span>
+                                    }
+                                    <span class="text-muted ms-1 fs-12">Last Month</span>
+                                </div>
+                                <a href="@Url.Action("Index", "Order", new { area = "Admin" })" class="text-reset fw-semibold fs-12">View More</a>
+                            </div>
+                        </div> <!-- end card body -->
+                    </div> <!-- end card -->
+                </div> <!-- end col -->
+                <div class="col-md-6">
+                    <div class="card overflow-hidden">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="avatar-md bg-soft-primary rounded">
+                                        <i class="bx bx-user avatar-title fs-24 text-primary"></i>
+                                    </div>
+                                </div> <!-- end col -->
+                                <div class="col-6 text-end">
+                                    <p class="text-muted mb-0 text-truncate">Customers</p>
+                                    <h3 class="text-dark mt-1 mb-0">@Model.TotalCustomers.ToString("N0")</h3>
+                                </div> <!-- end col -->
+                            </div> <!-- end row-->
+                        </div> <!-- end card body -->
+                        <div class="card-footer py-2 bg-light bg-opacity-50">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    @if (Model.CustomersGrowth >= 0)
+                                    {
+                                        <span class="text-success"> <i class="bx bxs-up-arrow fs-12"></i> @Model.CustomersGrowth.ToString("0.0")%</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger"> <i class="bx bxs-down-arrow fs-12"></i> @Math.Abs(Model.CustomersGrowth).ToString("0.0")%</span>
+                                    }
+                                    <span class="text-muted ms-1 fs-12">Last Month</span>
+                                </div>
+                                <a href="@Url.Action("Index", "Customer", new { area = "Admin" })" class="text-reset fw-semibold fs-12">View More</a>
+                            </div>
+                        </div> <!-- end card body -->
+                    </div> <!-- end card -->
+                </div> <!-- end col -->
+                <div class="col-md-6">
+                    <div class="card overflow-hidden">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="avatar-md bg-soft-primary rounded">
+                                        <i class="bx bxs-backpack avatar-title fs-24 text-primary"></i>
+                                    </div>
+                                </div> <!-- end col -->
+                                <div class="col-6 text-end">
+                                    <p class="text-muted mb-0 text-truncate">Products</p>
+                                    <h3 class="text-dark mt-1 mb-0">@Model.TotalProducts.ToString("N0")</h3>
+                                </div> <!-- end col -->
+                            </div> <!-- end row-->
+                        </div> <!-- end card body -->
+                        <div class="card-footer py-2 bg-light bg-opacity-50">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                     @if (Model.ProductsGrowth >= 0)
+                                    {
+                                        <span class="text-success"> <i class="bx bxs-up-arrow fs-12"></i> @Model.ProductsGrowth.ToString("0.0")%</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger"> <i class="bx bxs-down-arrow fs-12"></i> @Math.Abs(Model.ProductsGrowth).ToString("0.0")%</span>
+                                    }
+                                    <span class="text-muted ms-1 fs-12">Last Month</span>
+                                </div>
+                                <a href="@Url.Action("Index", "Item", new { area = "Admin" })" class="text-reset fw-semibold fs-12">View More</a>
+                            </div>
+                        </div> <!-- end card body -->
+                    </div> <!-- end card -->
+                </div> <!-- end col -->
+                <div class="col-md-6">
+                    <div class="card overflow-hidden">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="avatar-md bg-soft-primary rounded">
+                                        <i class="bx bx-dollar-circle avatar-title text-primary fs-24"></i>
+                                    </div>
+                                </div> <!-- end col -->
+                                <div class="col-6 text-end">
+                                    <p class="text-muted mb-0 text-truncate">Revenue</p>
+                                    <h3 class="text-dark mt-1 mb-0">@Model.TotalRevenue.ToString("C0")</h3>
+                                </div> <!-- end col -->
+                            </div> <!-- end row-->
+                        </div> <!-- end card body -->
+                        <div class="card-footer py-2 bg-light bg-opacity-50">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    @if (Model.RevenueGrowth >= 0)
+                                    {
+                                        <span class="text-success"> <i class="bx bxs-up-arrow fs-12"></i> @Model.RevenueGrowth.ToString("0.0")%</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger"> <i class="bx bxs-down-arrow fs-12"></i> @Math.Abs(Model.RevenueGrowth).ToString("0.0")%</span>
+                                    }
+                                    <span class="text-muted ms-1 fs-12">Last Month</span>
+                                </div>
+                                <a href="@Url.Action("Sales", "Report", new { area = "Admin" })" class="text-reset fw-semibold fs-12">View More</a>
+                            </div>
+                        </div> <!-- end card body -->
+                    </div> <!-- end card -->
+                </div> <!-- end col -->
+            </div> <!-- end row -->
+        </div> <!-- end col -->
+
+        <div class="col-xxl-7">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="card-title">Performance</h4>
+                        <a href="@Url.Action("Sales", "Report", new { area = "Admin" })" class="btn btn-sm btn-outline-light chart-filter" data-period="ALL">View All</a>
+                    </div> <!-- end card-title-->
+
+                    <div dir="ltr">
+                        <div id="dash-performance-chart" class="apex-charts"></div>
+                    </div>
+                </div> <!-- end card body -->
+            </div> <!-- end card -->
+        </div> <!-- end col -->
+    </div> <!-- end row -->
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card card-height-100">
+                <div class="card-header d-flex align-items-center justify-content-between gap-2">
+                    <h4 class="card-title flex-grow-1">Top Products</h4>
+
+                    <a href="@Url.Action("Index", "Item", new { area = "Admin" })" class="btn btn-sm btn-soft-primary">View All</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-nowrap table-centered m-0">
+                        <thead class="bg-light bg-opacity-50">
+                            <tr>
+                                <th class="text-muted ps-3">Product</th>
+                                <th class="text-muted">Quantity Sold</th>
+                                <th class="text-muted">Total Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(Model.TopProducts != null && Model.TopProducts.Any())
+                            {
+                                @foreach(var product in Model.TopProducts)
+                                {
+                                    <tr>
+                                        <td class="ps-3">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <img src="/@(string.IsNullOrEmpty(product.ThumbnailUrl) ? "uploads/default.png" : product.ThumbnailUrl)" 
+                                                     alt="@product.ProductName" class="avatar-sm">
+                                                <div class="flex-grow-1">
+                                                    <h5 class="fs-14 mb-0">@product.ProductName</h5>
+                                                    <span class="text-muted fs-12">@product.StyleCode</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>@product.TotalQuantitySold</td>
+                                        <td>@product.TotalRevenue.ToString("C0")</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center py-4">No top products available</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div> <!-- end col -->
+
+        <div class="col-lg-6">
+            <div class="card card-height-100">
+                <div class="card-header d-flex align-items-center justify-content-between gap-2">
+                    <h4 class="card-title flex-grow-1">Top Customers</h4>
+
+                    <a href="@Url.Action("Index", "Customer", new { area = "Admin" })" class="btn btn-sm btn-soft-primary">View All</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-nowrap table-centered m-0">
+                        <thead class="bg-light bg-opacity-50">
+                            <tr>
+                                <th class="text-muted ps-3">Customer Name</th>
+                                <th class="text-muted">Total Orders</th>
+                                <th class="text-muted">Total Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(Model.TopCustomers != null && Model.TopCustomers.Any())
+                            {
+                                @foreach(var customer in Model.TopCustomers)
+                                {
+                                    <tr>
+                                        <td class="ps-3"><a href="#" class="text-muted">@customer.CustomerName</a></td>
+                                        <td>@customer.TotalOrders</td>
+                                        <td>
+                                            @customer.TotalSpent.ToString("C0")
+                                            <span class="badge badge-soft-success ms-1">@customer.SpendingPercentage.ToString("0.0")%</span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center py-4">No top customers available</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div> <!-- end col -->
+
+    </div> <!-- end row -->
+
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h4 class="card-title">
+                            Recent Orders
+                        </h4>
+
+                        <a href="@Url.Action("Index", "Order", new { area = "Admin" })" class="btn btn-sm btn-soft-primary">
+                            View All
+                        </a>
+                    </div>
+                </div>
+                <!-- end card body -->
+                <div class="table-responsive table-centered">
+                    <table class="table mb-0">
+                        <thead class="bg-light bg-opacity-50">
+                            <tr>
+                                <th class="ps-3">
+                                    Order ID.
+                                </th>
+                                <th>
+                                    Date
+                                </th>
+                                <th>
+                                    Items
+                                </th>
+                                <th>
+                                    Customer Name
+                                </th>
+                                <th>
+                                    Email ID
+                                </th>
+                                <th>
+                                    Phone No.
+                                </th>
+                                <th>
+                                    Address
+                                </th>
+                                <th>
+                                    Payment Type
+                                </th>
+                                <th>
+                                    Status
+                                </th>
+                            </tr>
+                        </thead>
+                        <!-- end thead-->
+                        <tbody>
+                            @if(Model.RecentOrders != null && Model.RecentOrders.Any())
+                            {
+                                foreach(var order in Model.RecentOrders)
+                                {
+                                    <tr>
+                                        <td class="ps-3">
+                                            <a href="@Url.Action("Detail", "Order", new { area = "Admin", id = order.OrderId })">@order.OrderNumber</a>
+                                        </td>
+                                        <td>@order.OrderDate.ToString("dd MMM yyyy")</td>
+                                        <td>
+                                            <img src="@(string.IsNullOrEmpty(order.ProductImageUrl) ? "/uploads/default.png" : (order.ProductImageUrl.StartsWith("/") ? order.ProductImageUrl : "/" + order.ProductImageUrl))" alt="product" class="img-fluid avatar-sm">
+                                        </td>
+                                        <td>
+                                            <a href="#!">@order.CustomerName</a>
+                                        </td>
+                                        <td>@order.Email</td>
+                                        <td>@order.PhoneNumber</td>
+                                        <td>@order.ShippingAddress</td>
+                                        <td>@order.PaymentMethod</td>
+                                        <td>
+                                            <i class="bx bxs-circle text-success me-1"></i>@order.OrderStatus
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="9" class="text-center">No recent orders found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <!-- end tbody -->
+                    </table>
+                    <!-- end table -->
+                </div>
+                <!-- table responsive -->
+
+                <div class="card-footer border-top">
+                    <div class="row g-3">
+                        <div class="col-sm">
+                            <div class="text-muted">
+                                Showing
+                                <span class="fw-semibold">@(Model.RecentOrders?.Count ?? 0)</span>
+                                of
+                                <span class="fw-semibold">@Model.TotalOrders</span>
+                                orders
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- end card -->
+        </div>
+        <!-- end col -->
+    </div> <!-- end row -->
+</div>
+<!-- End Container Fluid -->
+@section Scripts {
+    <!-- Vector Map Javascript -->
+    <script src="/admin/vendor/jsvectormap/js/jsvectormap.min.js"></script>
+    <script src="/admin/vendor/jsvectormap/maps/world-merc.js"></script>
+    <script src="/admin/vendor/jsvectormap/maps/world.js"></script>
+
+    <!-- Dashboard Javascript -->
+    <script src="/admin/js/pages/dashboard.js"></script>
+}

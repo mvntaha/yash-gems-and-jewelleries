@@ -277,14 +277,14 @@ namespace Yash_Gems___Jewelleries.Areas.Admin.Controllers
                 var result = await _itemService.DeleteProductAsync(id);
                 if (result)
                 {
-                    return Json(new { success = true, message = "Product deleted successfully." });
+                    return Json(new { success = true, message = "Product deleted successfully.", type = "success" });
                 }
-                return Json(new { success = false, message = "Failed to delete product." });
+                return Json(new { success = false, message = "Failed to delete product.", type = "danger" });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error deleting product: {StyleCode}", id);
-                return Json(new { success = false, message = "An error occurred." });
+                return Json(new { success = false, message = "An error occurred.", type = "danger" });
             }
         }
 
@@ -294,12 +294,12 @@ namespace Yash_Gems___Jewelleries.Areas.Admin.Controllers
             try
             {
                 var result = await _itemService.ToggleStatusAsync(id);
-                return Json(new { success = result });
+                return Json(new { success = true, message = $"Status updated to {(result ? "Active" : "Inactive")}.", type = "success", success_toggle = result });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error toggling status for product: {StyleCode}", id);
-                return Json(new { success = false });
+                return Json(new { success = false, message = "Failed to update status.", type = "danger" });
             }
         }
 

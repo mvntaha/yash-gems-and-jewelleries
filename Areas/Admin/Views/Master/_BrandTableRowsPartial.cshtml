@@ -1,0 +1,64 @@
+@model IEnumerable<Yash_Gems___Jewelleries.Models.Masters.Brand>
+
+@foreach (var item in Model)
+{
+    <tr>
+        <td>
+            <a href="javascript: void(0);" class="text-dark fw-medium">#@item.BrandId</a>
+        </td>
+        <td>
+            <div class="d-flex align-items-center gap-2">
+                <div class="rounded bg-light avatar-md d-flex align-items-center justify-content-center">
+                    @if (!string.IsNullOrEmpty(item.LogoUrl))
+                    {
+                        <img src="@(item.LogoUrl.StartsWith("/") ? item.LogoUrl : "/" + item.LogoUrl)" alt="" class="avatar-md">
+                    }
+                    else
+                    {
+                        <img src="/uploads/default.png" alt="" class="avatar-md">
+                    }
+                </div>
+                <div>
+                    <a href="javascript:void(0);" class="text-dark fw-medium fs-15">@item.BrandType</a>
+                </div>
+            </div>
+        </td>
+        <td>@(item.Email ?? "N/A")</td>
+        <td>@(item.Website ?? "N/A")</td>
+        <td>@(item.Location ?? "N/A")</td>
+        <td>@(item.Items?.Count ?? 0)</td>
+        <td>
+            @if (item.IsActive)
+            {
+                <span class="badge border border-success text-success px-2 py-1 fs-13">Active</span>
+            }
+            else
+            {
+                <span class="badge border border-danger text-danger px-2 py-1 fs-13">Inactive</span>
+            }
+        </td>
+        <td>
+            <div class="d-flex gap-2">
+                <a href="javascript:void(0);" 
+                   class="btn btn-light btn-sm" 
+                   title="Toggle Status" 
+                   onclick="MasterData.toggleStatus(@item.BrandId, 'Brand')">
+                    <iconify-icon icon="@(item.IsActive ? "solar:eye-broken" : "solar:eye-closed-broken")" 
+                                  class="align-middle fs-18 text-muted"></iconify-icon>
+                </a>
+                <a href="javascript:void(0);" 
+                   class="btn btn-soft-primary btn-sm" 
+                   title="Edit"
+                   onclick="MasterData.openModal(@item.BrandId)">
+                    <iconify-icon icon="solar:pen-2-broken" class="align-middle fs-18"></iconify-icon>
+                </a>
+                <a href="javascript:void(0);" 
+                   class="btn btn-soft-danger btn-sm" 
+                   title="Delete"
+                   onclick="MasterData.delete(@item.BrandId)">
+                    <iconify-icon icon="solar:trash-bin-minimalistic-2-broken" class="align-middle fs-18"></iconify-icon>
+                </a>
+            </div>
+        </td>
+    </tr>
+}

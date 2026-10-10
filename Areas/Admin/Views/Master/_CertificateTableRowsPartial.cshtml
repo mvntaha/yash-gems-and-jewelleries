@@ -1,0 +1,57 @@
+@model IEnumerable<Yash_Gems___Jewelleries.Models.Masters.Certificate>
+
+@foreach (var item in Model)
+{
+    <tr>
+        <td><a href="javascript: void(0);" class="text-dark fw-medium">#@item.CertificateId</a></td>
+        <td>
+            <div>
+                <a href="javascript:void(0);" class="text-dark fw-medium fs-15">@item.CertifyType</a>
+                <p class="text-muted mb-0 fs-12">@item.IssuingAuthority</p>
+            </div>
+        </td>
+        <td class="text-muted">
+            @(item.Description != null && item.Description.Length > 60 ? item.Description.Substring(0, 57) + "..." : item.Description ?? "N/A")
+        </td>
+        <td>
+            @if (item.IsActive)
+            {
+                <span class="badge border border-success text-success px-2 py-1 fs-13">Active</span>
+            }
+            else
+            {
+                <span class="badge border border-danger text-danger px-2 py-1 fs-13">Inactive</span>
+            }
+        </td>
+        <td>
+            @(item.Items?.Count ?? 0)
+        </td>
+        <td class="text-muted">
+            @item.CreatedDate.ToString("dd MMM yyyy")
+        </td>
+        <td>
+            <div class="d-flex gap-2">
+                <a href="javascript:void(0);" 
+                   class="btn btn-light btn-sm" 
+                   title="Toggle Status" 
+                   onclick="MasterData.toggleStatus(@item.CertificateId, 'Certificate')">
+                    <iconify-icon icon="@(item.IsActive ? "solar:eye-broken" : "solar:eye-closed-broken")" 
+                                  class="align-middle fs-18 text-muted"></iconify-icon>
+                </a>
+                <a href="javascript:void(0);" 
+                   class="btn btn-soft-primary btn-sm" 
+                   title="Edit"
+                   onclick="MasterData.openModal(@item.CertificateId)">
+                    <iconify-icon icon="solar:pen-2-broken" class="align-middle fs-18"></iconify-icon>
+                </a>
+                <a href="javascript:void(0);" 
+                   class="btn btn-soft-danger btn-sm" 
+                   title="Delete"
+                   onclick="MasterData.delete(@item.CertificateId)">
+                    <iconify-icon icon="solar:trash-bin-minimalistic-2-broken" class="align-middle fs-18"></iconify-icon>
+                </a>
+            </div>
+        </td>
+    </tr>
+}
+
