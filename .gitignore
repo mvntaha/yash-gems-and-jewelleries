@@ -49,6 +49,7 @@ yarn-error.log*
 
 # Environment & secrets
 appsettings.Development.json
+appsettings.Production.json
 appsettings.Local.json
 .env
 .env.*
