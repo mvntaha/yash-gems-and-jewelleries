@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Yash_Gems___Jewelleries.Models.Masters;
 using Yash_Gems___Jewelleries.Models;
+using Yash_Gems___Jewelleries.Models.Enums;
 
 namespace Yash_Gems___Jewelleries.Data
 {
@@ -33,16 +34,18 @@ namespace Yash_Gems___Jewelleries.Data
         public DbSet<CartItem> CartItems { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<OrderStatusHistory> StatusHistories { get; set; }
         public DbSet<Wishlist> Wishlists { get; set; }
 
         // Customer Interaction
         public DbSet<Inquiry> Inquiries { get; set; }
-        public DbSet<Review> Reviews { get; set; }
 
         // Marketing & Promotions
         public DbSet<Banner> Banners { get; set; }
         public DbSet<DiscountScheme> DiscountSchemes { get; set; }
         public DbSet<NewsletterSubscription> NewsletterSubscriptions { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<SystemSetting> SystemSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -157,6 +160,13 @@ namespace Yash_Gems___Jewelleries.Data
                 .HasForeignKey(oi => oi.StyleCode)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // OrderStatusHistory relationships
+            modelBuilder.Entity<OrderStatusHistory>()
+                .HasOne(osh => osh.Order)
+                .WithMany(o => o.StatusHistories)
+                .HasForeignKey(osh => osh.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Inquiry relationships
             modelBuilder.Entity<Inquiry>()
                 .HasOne(i => i.User)
@@ -170,19 +180,6 @@ namespace Yash_Gems___Jewelleries.Data
                 .HasForeignKey(i => i.StyleCode)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Review relationships
-            modelBuilder.Entity<Review>()
-                .HasOne(r => r.User)
-                .WithMany(u => u.Reviews)
-                .HasForeignKey(r => r.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Review>()
-                .HasOne(r => r.Item)
-                .WithMany(i => i.Reviews)
-                .HasForeignKey(r => r.StyleCode)
-                .OnDelete(DeleteBehavior.Cascade);
-
             // Wishlist relationships
             modelBuilder.Entity<Wishlist>()
                 .HasOne(w => w.User)
@@ -195,6 +192,13 @@ namespace Yash_Gems___Jewelleries.Data
                 .WithMany()
                 .HasForeignKey(w => w.StyleCode)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Banner relationships
+            modelBuilder.Entity<Banner>()
+                .HasOne(b => b.DiscountScheme)
+                .WithMany()
+                .HasForeignKey(b => b.DiscountSchemeId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
 
         private void ConfigureIndexes(ModelBuilder modelBuilder)
@@ -250,17 +254,20 @@ namespace Yash_Gems___Jewelleries.Data
             modelBuilder.Entity<Order>()
                 .HasIndex(o => o.OrderStatus);
 
-            // Review indexes
-            modelBuilder.Entity<Review>()
-                .HasIndex(r => r.StyleCode);
+            modelBuilder.Entity<Order>()
+                .HasIndex(o => o.PaymentStatus);
 
-            modelBuilder.Entity<Review>()
-                .HasIndex(r => new { r.StyleCode, r.IsApproved });
+            modelBuilder.Entity<Order>()
+                .HasIndex(o => o.IsActive);
 
-            // Unique composite index to enforce one review per user per product
-            modelBuilder.Entity<Review>()
-                .HasIndex(r => new { r.UserId, r.StyleCode })
-                .IsUnique();
+            // Order Status Enum Conversion
+            modelBuilder.Entity<Order>()
+                .Property(o => o.OrderStatus)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<OrderStatusHistory>()
+                .Property(osh => osh.Status)
+                .HasConversion<string>();
 
             // Wishlist indexes
             modelBuilder.Entity<Wishlist>()
@@ -271,6 +278,30 @@ namespace Yash_Gems___Jewelleries.Data
             modelBuilder.Entity<NewsletterSubscription>()
                 .HasIndex(n => n.Email)
                 .IsUnique();
+
+            // Notification indexes
+            modelBuilder.Entity<Notification>()
+                .HasIndex(n => n.IsRead);
+
+            modelBuilder.Entity<Notification>()
+                .HasIndex(n => n.CreatedAt);
+
+            modelBuilder.Entity<Notification>()
+                .HasIndex(n => new { n.TargetRole, n.IsRead });
+
+            // Configure Concurrency Tokens (RowVersion) for Master Entities
+            ConfigureConcurrencyTokens(modelBuilder);
+        }
+
+        private void ConfigureConcurrencyTokens(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Brand>().Property(b => b.RowVersion).IsRowVersion();
+            modelBuilder.Entity<Category>().Property(c => c.RowVersion).IsRowVersion();
+            modelBuilder.Entity<Certificate>().Property(c => c.RowVersion).IsRowVersion();
+            modelBuilder.Entity<ProductType>().Property(p => p.RowVersion).IsRowVersion();
+            modelBuilder.Entity<DiamondQuality>().Property(d => d.RowVersion).IsRowVersion();
+            modelBuilder.Entity<StoneQuality>().Property(s => s.RowVersion).IsRowVersion();
+            modelBuilder.Entity<GoldKarat>().Property(g => g.RowVersion).IsRowVersion();
         }
 
         private void ConfigureDecimalPrecision(ModelBuilder modelBuilder)
@@ -281,40 +312,6 @@ namespace Yash_Gems___Jewelleries.Data
         private void SeedData(ModelBuilder modelBuilder)
         {
             var seedDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-            // Seed Master Data - Brands
-            modelBuilder.Entity<Brand>().HasData(
-                new Brand { BrandId = 1, BrandType = "Tanishq", Description = "India's most trusted jewelry brand", IsActive = true, CreatedDate = seedDate },
-                new Brand { BrandId = 2, BrandType = "Malabar Gold", Description = "Heritage jewelry designs", IsActive = true, CreatedDate = seedDate },
-                new Brand { BrandId = 3, BrandType = "CaratLane", Description = "Modern jewelry designs", IsActive = true, CreatedDate = seedDate },
-                new Brand { BrandId = 4, BrandType = "Giva", Description = "Affordable silver jewelry", IsActive = true, CreatedDate = seedDate },
-                new Brand { BrandId = 5, BrandType = "Yash", Description = "Premium in-house brand", IsActive = true, CreatedDate = seedDate }
-            );
-
-            // Seed Categories (Shopping Types)
-            modelBuilder.Entity<Category>().HasData(
-                new Category { CategoryId = 1, CategoryName = "Rings", Description = "Finger rings for all occasions", IsActive = true, CreatedDate = seedDate },
-                new Category { CategoryId = 2, CategoryName = "Necklaces", Description = "Elegant necklaces and chains", IsActive = true, CreatedDate = seedDate },
-                new Category { CategoryId = 3, CategoryName = "Earrings", Description = "Studs, jhumkas and drops", IsActive = true, CreatedDate = seedDate },
-                new Category { CategoryId = 4, CategoryName = "Bangles", Description = "Traditional and modern bangles", IsActive = true, CreatedDate = seedDate },
-                new Category { CategoryId = 5, CategoryName = "Bracelets", Description = "Wrist jewelry for men and women", IsActive = true, CreatedDate = seedDate },
-                new Category { CategoryId = 6, CategoryName = "Nose Pins", Description = "Traditional nose pins", IsActive = true, CreatedDate = seedDate },
-                new Category { CategoryId = 7, CategoryName = "Mangalsutras", Description = "Symbol of marriage", IsActive = true, CreatedDate = seedDate },
-                new Category { CategoryId = 8, CategoryName = "Toe Rings", Description = "Traditional toe rings", IsActive = true, CreatedDate = seedDate },
-                new Category { CategoryId = 9, CategoryName = "Anklets", Description = "Payal and anklets", IsActive = true, CreatedDate = seedDate }
-            );
-
-            // Seed Product Types (Material)
-            modelBuilder.Entity<ProductType>().HasData(
-                new ProductType { ProductTypeId = 1, ProductTypeName = "Gold Jewelry", Description = "Classic gold jewelry", IsActive = true, CreatedDate = seedDate },
-                new ProductType { ProductTypeId = 2, ProductTypeName = "Diamond Jewelry", Description = "Sparkling diamond pieces", IsActive = true, CreatedDate = seedDate },
-                new ProductType { ProductTypeId = 3, ProductTypeName = "Platinum", Description = "Rare and pure platinum", IsActive = true, CreatedDate = seedDate },
-                new ProductType { ProductTypeId = 4, ProductTypeName = "Silver", Description = "Sterling silver jewelry", IsActive = true, CreatedDate = seedDate },
-                new ProductType { ProductTypeId = 5, ProductTypeName = "Kundan", Description = "Traditional Kundan jewelry", IsActive = true, CreatedDate = seedDate },
-                new ProductType { ProductTypeId = 6, ProductTypeName = "Polki", Description = "Uncut diamond jewelry", IsActive = true, CreatedDate = seedDate },
-                new ProductType { ProductTypeId = 7, ProductTypeName = "Temple Jewelry", Description = "South Indian temple designs", IsActive = true, CreatedDate = seedDate },
-                new ProductType { ProductTypeId = 8, ProductTypeName = "Gemstone", Description = "Precious stone jewelry", IsActive = true, CreatedDate = seedDate }
-            );
 
             // Seed Certificates
             modelBuilder.Entity<Certificate>().HasData(
