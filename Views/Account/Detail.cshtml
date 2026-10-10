@@ -1,9 +1,19 @@
-﻿@using Yash_Gems___Jewelleries.Controllers
-@model AccountController.UserDetailModel
+﻿@model Yash_Gems___Jewelleries.ViewModels.AccountProfileViewModel
 
 @{
 	ViewData["Title"] = "My Account's Details";
 }
+
+<style>
+    .profile-img-preview {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid #f0f0f0;
+        margin-bottom: 10px;
+    }   
+</style>
 
 <!-- Page Title -->
 <section class="flat-spacing-2 pb-0">
@@ -41,7 +51,7 @@
                             </a>
                         </li>
                         <li>
-                            <a asp-action="Wishlist" asp-controller="Account" class="link-account">
+                            <a href="@Url.Action("Index", "Wishlist")" class="link-account">
                                 <span class="text">My Wishlist</span>
                             </a>
                         </li>
@@ -71,75 +81,93 @@
                 <div class="my-acount-content account-dashboard">
                     <h4 class="heading fw-normal">ACCOUNT DETAIL</h4>
                     
-                    @if (TempData["Success"] != null)
-                    {
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            @TempData["Success"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    }
-                    @if (TempData["Error"] != null)
-                    {
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            @TempData["Error"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    }
-
-                    <form asp-action="Detail" method="post" class="form-edit-account style-border">
+                    <form asp-action="Detail" method="post" enctype="multipart/form-data" class="form-edit-account style-border">
                         @Html.AntiForgeryToken()
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row mb-5">
+                            <div class="col-md-12 text-center">
+                                <div class="profile-img-container">
+                                    <img id="profilePreview" src="@(string.IsNullOrEmpty(Model.ProfilePictureUrl) ? "/uploads/dummy-user.jpg" : (Model.ProfilePictureUrl.StartsWith("/") ? Model.ProfilePictureUrl : "/" + Model.ProfilePictureUrl))" alt="Profile Picture" class="profile-img-preview" />
+                                </div>
+                                <div class="profile-upload-btn">
+                                    <label for="profileUpload" class="tf-btn btn-outline animate-btn fw-medium btn-sm" style="cursor: pointer;">
+                                        Change Photo
+                                    </label>
+                                    <input type="file" asp-for="ProfilePictureFile" id="profileUpload" style="display: none;" accept="image/*" onchange="previewImage(this)" />
+                                    <span asp-validation-for="ProfilePictureFile" class="text-danger d-block mt-2"></span>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="form-content-2">
                             <fieldset class="tf-field-2">
                                 <input asp-for="FirstName" class="tf-input" placeholder="" required>
                                 <label asp-for="FirstName" class="tf-lable">First name*</label>
-                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                                <span asp-validation-for="FirstName" class="feedback-message error text-sm"></span>
                             </fieldset>
                             <fieldset class="tf-field-2">
                                 <input asp-for="LastName" class="tf-input" placeholder="" required>
                                 <label asp-for="LastName" class="tf-lable">Last name*</label>
-                                <span asp-validation-for="LastName" class="text-danger"></span>
+                                <span asp-validation-for="LastName" class="feedback-message error text-sm"></span>
                             </fieldset>
                             <fieldset class="tf-field-2">
-                                <input asp-for="UserName" class="tf-input" placeholder="" required>
-                                <label asp-for="UserName" class="tf-lable">Username*</label>
-                                <span asp-validation-for="UserName" class="text-danger"></span>
+                                <input asp-for="Address" class="tf-input" placeholder="">
+                                <label asp-for="Address" class="tf-lable">Address</label>
+                                <span asp-validation-for="Address" class="feedback-message error text-sm"></span>
+                            </fieldset>
+                            <fieldset class="tf-field-2">
+                                <input asp-for="City" class="tf-input" placeholder="">
+                                <label asp-for="City" class="tf-lable">City</label>
+                                <span asp-validation-for="City" class="feedback-message error text-sm"></span>
+                            </fieldset>
+                            <fieldset class="tf-field-2">
+                                <input asp-for="State" class="tf-input" placeholder="">
+                                <label asp-for="State" class="tf-lable">State</label>
+                                <span asp-validation-for="State" class="feedback-message error text-sm"></span>
+                            </fieldset>
+                            <fieldset class="tf-field-2">
+                                <input asp-for="DateOfBirth" class="tf-input" placeholder="">
+                                <label asp-for="DateOfBirth" class="tf-lable">Date of Birth</label>
+                                <span asp-validation-for="DateOfBirth" class="feedback-message error text-sm"></span>
                             </fieldset>
                         </div>
 
                         @if (ViewBag.HasPassword == true)
                         {
-                            <h5 class="title-pass fw-normal">Password Change</h5>
+                            <h5 class="title-pass fw-normal mt-5">Password Change</h5>
                             <div class="form-content-2">
                                 <fieldset class="tf-field-2 password-wrapper">
-                                    <input asp-for="CurrentPassword" class="tf-input password-field" placeholder="">
-                                    <label asp-for="CurrentPassword" class="tf-lable">Current Password</label>
+                                    <input asp-for="CurrentPassword" type="password" class="tf-input password-field" placeholder="">
+                                    <label asp-for="CurrentPassword" class="tf-lable">Current Password *</label>
                                     <span class="toggle-pass icon-show-password"></span>
-                                    <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+                                    <span asp-validation-for="CurrentPassword" class="feedback-message error text-sm"></span>
                                 </fieldset>
                                 <fieldset class="tf-field-2 password-wrapper">
-                                    <input asp-for="NewPassword" class="tf-input password-field" placeholder="">
-                                    <label asp-for="NewPassword" class="tf-lable">New password</label>
+                                    <input asp-for="NewPassword" type="password" class="tf-input password-field" placeholder="">
+                                    <label asp-for="NewPassword" class="tf-lable">New password *</label>
                                     <span class="toggle-pass icon-show-password"></span>
-                                    <span asp-validation-for="NewPassword" class="text-danger"></span>
+                                    <span asp-validation-for="NewPassword" class="feedback-message error text-sm"></span>
                                 </fieldset>
                                 <fieldset class="tf-field-2 password-wrapper">
-                                    <input asp-for="ConfirmPassword" class="tf-input password-field" placeholder="">
-                                    <label asp-for="ConfirmPassword" class="tf-lable">Confirm password</label>
+                                    <input asp-for="ConfirmPassword" type="password" class="tf-input password-field" placeholder="">
+                                    <label asp-for="ConfirmPassword" class="tf-lable">Confirm password *</label>
                                     <span class="toggle-pass icon-show-password"></span>
-                                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                                    <span asp-validation-for="ConfirmPassword" class="feedback-message error text-sm"></span>
                                 </fieldset>
                             </div>
                         }
-                        else
+
+                        @if (TempData["Success"] != null)
                         {
-                            <div class="alert alert-light border mt-4">
-                                <div class="d-flex align-items-center mb-2">
-                                    <iconify-icon icon="solar:shield-warning-bold-duotone" class="fs-24 text-warning me-2"></iconify-icon>
-                                    <h6 class="alert-heading fw-bold mb-0">Password Management</h6>
-                                </div>
-                                <p class="mb-0 text-muted small">Your account is linked to an external provider (e.g., Google or GitHub). Password changes are disabled for security. Please manage your password settings through your authentication provider.</p>
+                            <div class="feedback-message success">
+                                @TempData["Success"]
+                            </div>
+                        }
+                        @if (TempData["Error"] != null)
+                        {
+                            <div class="feedback-message error">
+                                @TempData["Error"]
                             </div>
                         }
 
@@ -150,4 +178,19 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('profilePreview').src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}
 <!-- /Account -->

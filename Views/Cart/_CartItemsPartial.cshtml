@@ -6,7 +6,7 @@
         <td>
             <div class="order_product">
                 <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@item.StyleCode" class="image">
-                    <img src="@(!string.IsNullOrEmpty(item.ProductImage) ? item.ProductImage : "/app/images/products/product-default.jpg")" alt="@item.ProductName">
+                    <img src="@(string.IsNullOrEmpty(item.ProductImage) ? "/uploads/default.png" : (item.ProductImage.StartsWith("/") ? item.ProductImage : "/" + item.ProductImage))" alt="@item.ProductName">
                 </a>
                 <div class="infor">
                     <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@item.StyleCode" class="prd-name h6 fw-normal link">

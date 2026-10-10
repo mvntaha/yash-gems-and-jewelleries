@@ -38,7 +38,7 @@
                             </a>
                         </li>
                         <li>
-                            <a asp-action="Wishlist" asp-controller="Account" class="link-account">
+                            <a asp-action="Index" asp-controller="Wishlist" class="link-account">
                                 <span class="text">My Wishlist</span>
                             </a>
                         </li>
@@ -69,10 +69,10 @@
                     <div class="heading">
                         <p class="hello-name">
                             <span class="hello fw-normal h4">Hello</span>
-                            @User.Identity.Name.Split("@")[0]!
+                            @(User.Identity?.Name?.Split('@')[0] ?? "User")!
                             <span>
                                 (not
-                                <span class="name text-main">@User.Identity.Name.Split("@")[0]</span>?
+                                <span class="name text-main">@(User.Identity?.Name?.Split('@')[0] ?? "User")</span>?
                             </span>
                             <a href="javascript:void(0)" onclick="document.getElementById('logoutFormSidebar').submit()" class="link text-body">Log Out</a><span>)</span>
                         </p>
@@ -83,10 +83,10 @@
                             your last orders
                         </a>
                         or have a look to
-                        <a asp-action="Wishlist" asp-controller="Account" class="text-primary text-decoration-underline link-secondary-2">
+                        <a href="@Url.Action("Index", "Wishlist")" class="text-primary text-decoration-underline link-secondary-2">
                             your wishlist
                         </a>. Or maybe you can start to shop
-                        <a asp-action="Index" asp-controller="Shop" class="text-primary text-decoration-underline link-secondary-2">
+                        <a asp-action="Index" asp-controller="Item" class="text-primary text-decoration-underline link-secondary-2">
                             our
                             latest offers
                         </a>?
@@ -110,7 +110,7 @@
                             </a>
                         </li>
                         <li>
-                            <a asp-action="Wishlist" asp-controller="Account" class="box-check">
+                            <a href="@Url.Action("Index", "Wishlist")" class="box-check">
                                 <span class="icon">
                                     <i class="icon-heart-2"></i>
                                 </span>
@@ -134,7 +134,7 @@
                             <p class="sub-title">
                                 Enjoy exclusive deals and limited-time offers—your moment to shine is now!
                             </p>
-                            <a asp-action="Index" asp-controller="Shop" class="tf-btn type-large ">
+                            <a asp-action="Index" asp-controller="Item" class="tf-btn type-large ">
                                 Shop Now
                                 <i class="icon-arrow-right-2 fs-24"></i>
                             </a>
@@ -151,7 +151,7 @@
                                 Score exclusive discounts on our top styles! Hurry – these offers won’t last long.
                             </p>
 
-                            <a asp-action="Index" asp-controller="Shop" class="tf-btn text-uppercase type-large">
+                            <a asp-action="Index" asp-controller="Item" class="tf-btn text-uppercase type-large">
                                 SHOP COLLECTION
                                 <i class="icon-arrow-right-3 fs-24"></i>
                             </a>

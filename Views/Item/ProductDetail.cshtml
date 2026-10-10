@@ -1,0 +1,639 @@
+﻿@model Yash_Gems___Jewelleries.ViewModels.ProductDetailViewModel
+@{
+	ViewData["Title"] = Model.Item.ItemName;
+}
+
+<!-- Page Title -->
+<div class="flat-spacing-16 pb-0">
+    <div class="container">
+        <div class="page-title border-0">
+            <div class="breadcrumbs">
+                <ul class="bread-wrap mb-0">
+                    <li><a asp-controller="Home" asp-action="Index" class="text-main-4 link">Home</a></li>
+                    <li class="br-line w-12 bg-main"></li>
+                    <li><a asp-controller="Item" asp-action="Index" class="text-main-4 link">Shop</a></li>
+                    <li class="br-line w-12 bg-main"></li>
+                    <li>
+                        <p>@Model.Item.ItemName</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Page Title -->
+<!-- Product Detail -->
+<section class="flat-spacing pt-0">
+    <div class="tf-main-product section-image-zoom">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="tf-product-media-wrap sticky-top">
+                        <div class="thumbs-slider">
+                            <div class="flat-wrap-media-product">
+                                <div dir="ltr" class="swiper tf-product-media-main" id="gallery-swiper-started">
+                                    <div class="swiper-wrapper">
+                                        @{
+                                            // Filter and collect available images
+                                            var images = new[] { Model.Item.PrimaryImageUrl, Model.Item.SecondaryImageUrl, Model.Item.TertiaryImageUrl }
+                                                            .Where(img => !string.IsNullOrEmpty(img))
+                                                            .ToList();
+                                        }
+
+                                        @for (int i = 0; i < images.Count; i++)
+                                        {
+                                            var imgUrl = (images[i] ?? "").StartsWith("/") ? images[i] : "/" + images[i];
+                                            
+                                            <div class="swiper-slide" data-color="gold" data-size="48">
+                                                <a href="@imgUrl" target="_blank" class="item" data-pswp-width="1135px" data-pswp-height="1024px">
+                                                    <img class="tf-image-zoom lazyload"
+                                                        data-zoom="@imgUrl"
+                                                        data-src="@imgUrl"
+                                                        src="@(imgUrl ?? "/uploads/default.png")" 
+                                                        alt="@Model.Item.ItemName - Image @(i + 1)">
+                                                </a>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    @* Updated Pagination and Navigation to match inspiration *@
+                                    <div class="thumbs-pagination"></div>
+                                    
+                                    <div class="nav-swiper-group">
+                                        <div class="nav-thumbs thumbs-prev">
+                                            <span class="h6 fw-normal">PRE</span>
+                                        </div>
+                                        <span class="text-main">/</span>
+                                        <div class="nav-thumbs thumbs-next">
+                                            <span class="h6 fw-normal">NEXT</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @* Keep thumbnails if more than one image exists *@
+                            <!-- @if (images.Count > 1)
+                            {
+                                <div dir="ltr" class="swiper tf-product-media-thumbs" data-preview="4" data-direction="horizontal">
+                                    <div class="swiper-wrapper stagger-wrap">
+                                        @for (int i = 0; i < images.Count; i++)
+                                        {
+                                            var imgUrl = (images[i] ?? "").StartsWith("/") ? images[i] : "/" + images[i];
+                                            <div class="swiper-slide stagger-item" data-color="gold">
+                                                <div class="item">
+                                                    <img data-src="@(imgUrl ?? "/uploads/default.png")" src="@imgUrl" alt="@Model.Item.ItemName - Thumbnail @(i + 1)" class="lazyload">
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            } -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="tf-product-info-wrap">
+                        <div class="tf-zoom-main sticky-top" style="top: 15px;"></div>
+                        <div class="tf-product-info-list other-image-zoom">
+                            <div class="tf-product-info-heading">
+                                <h3 class="product-info-name fw-normal text-uppercase">
+                                    @Model.Item.ItemName
+                                </h3>
+                                <div class="product-info-price">
+                                    <div class="price-wrap">
+                                        <span class="price-new price-on-sale h4">@Model.Item.SellingPrice.ToString("C")</span>
+                                        @if (Model.Item.MRP > Model.Item.SellingPrice)
+                                        {
+                                            <span class="price-old compare-at-price fw-normal h6">@Model.Item.MRP.ToString("C")</span>
+                                            <p class="badges-on-sale">
+                                                <i class="icon-tag"></i>
+                                                <span class="number-sale">
+                                                    @Math.Round(Model.Item.DiscountPercentage)% OFF
+                                                </span>
+                                            </p>
+                                        }
+                                    </div>
+                                </div>
+                                <p class="product-infor-sub h6 fw-normal text-main-4">
+                                    @Model.Item.Description
+                                </p>
+                                <div class="product-info-progress-sale">
+                                    @if (Model.Item.Quantity > 0 && Model.Item.Quantity <= 5)
+                                    {
+                                        <h6 class="text-hurry-up fw-normal">Only @Model.Item.Quantity items left</h6>
+                                    }
+                                    else if (Model.Item.Quantity > 0)
+                                    {
+                                        <h6 class="text-hurry-up fw-normal">In stock (@Model.Item.Quantity available)</h6>
+                                    }
+                                    else
+                                    {
+                                        <h6 class="text-hurry-up fw-normal text-danger">Out of stock</h6>
+                                    }
+                                    @{
+                                        var progress = Model.Item.Quantity > 10 ? 100 : (Model.Item.Quantity * 10);
+                                    }
+                                    <div class="progress-cart">
+                                        <div class="value" style="width: @(progress)%;" data-progress="@progress"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tf-product-info-variant">
+                                <div class="variant-picker-item variant-color">
+                                    <div class="variant-picker-label h6 fw-normal">
+                                        <span id="detailsLabel">Brand</span>:
+                                        <span class="variant-picker-label-value value-currentColor" id="detailsValue">@(Model.Item.Brand?.BrandType ?? "Default")</span>
+                                    </div>
+                                    <div class="variant-picker-values">
+                                        <div class="hover-tooltip color-btn style-image-square active" data-name="Brand" data-value="@(Model.Item.Brand?.BrandType ?? "Default")" data-price="@Model.Item.SellingPrice">
+                                            <span class="check-color">
+                                                <img src="/@(Model.Item.Brand?.LogoUrl ?? "/uploads/default.png")" alt="@Model.Item.Brand?.BrandType">
+                                            </span>
+                                            <span class="tooltip">Brand: @Model.Item.Brand?.BrandType</span>
+                                        </div>
+                                        @if(Model.Item.ProductType != null)
+                                        {
+                                            <div class="hover-tooltip color-btn style-image-square" data-name="Type" data-value="@(Model.Item.ProductType.ProductTypeName)" data-price="@Model.Item.SellingPrice">
+                                                <span class="check-color">
+                                                    <img src="/@(Model.Item.ProductType.ImageUrl ?? "/uploads/default.png")" alt="@Model.Item.ProductType.ProductTypeName">
+                                                </span>
+                                                <span class="tooltip">Type: @Model.Item.ProductType.ProductTypeName</span>
+                                            </div>
+                                        }
+                                        @if(Model.Item.Category != null)
+                                        {
+                                            <div class="hover-tooltip color-btn style-image-square" data-name="Category" data-value="@(Model.Item.Category.CategoryName)" data-price="@Model.Item.SellingPrice">
+                                                <span class="check-color">
+                                                    <img src="/@(Model.Item.Category.ImageUrl ?? "/uploads/default.png")" alt="@Model.Item.Category.CategoryName">
+                                                </span>
+                                                <span class="tooltip">Category: @Model.Item.Category.CategoryName</span>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="variant-picker-item variant-size">
+                                    <div class="variant-picker-label h6 fw-normal">
+                                        Karat:
+                                        <span class="variant-picker-label-value value-currentSize">@(Model.Item.GoldKarat?.GoldCarat ?? "N/A")</span>
+                                    </div>
+                                </div>
+                                <div class="variant-picker-item">
+                                    <div class="variant-picker-label h6 fw-normal">Quantity</div>
+                                    <div class="variant-picker-values">
+                                        <div class="wg-quantity">
+                                            <button class="btn-quantity btn-decrease"><i class="icon-minus"></i></button>
+                                            <input class="quantity-product" type="text" name="number" value="1">
+                                            <button class="btn-quantity btn-increase"><i class="icon-plus"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tf-product-total-quantity">
+                                <div class="group-btn">
+                                @if(Model.Item.Quantity > 0)
+                                {
+                                    <a href="#shoppingCart" data-bs-toggle="offcanvas" 
+                                       class="tf-btn btn-fill-2 text-uppercase fw-medium animate-btn btn-add-to-cart"
+                                       data-stylecode="@Model.Item.StyleCode">
+
+                                        add to bag
+                                        <i class="icon-minus d-none d-sm-block"></i>
+                                        <span class="price-add d-none d-sm-block">@Model.Item.SellingPrice.ToString("C")</span>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a href="#shoppingCart" data-bs-toggle="offcanvas" class="tf-btn btn-unavailable animate-btn text-line-clamp-1 text-center text-nowrap">
+                                        This item is currently unavailable
+                                    </a>
+                                }
+                                    <div class="group-btn-action">
+                                        <a href="javascript:void(0);" 
+                                           class="tf-btn-icon hover-tooltip btn-add-wishlist @(Model.WishlistStyleCodes.Contains(Model.Item.StyleCode) ? "active" : "")"
+                                           data-stylecode="@Model.Item.StyleCode">
+                                            <span class="icon icon-heart-2"></span>
+                                            <span class="tooltip">Add to Wishlist</span>
+                                        </a>
+                                    </div>
+                                </div>
+                                @if(Model.Item.Quantity > 0)
+                                {
+                                    <a asp-controller="Checkout" asp-action="Index" class="tf-btn w-100 text-uppercase fw-medium">
+                                        buy it now
+                                    </a>
+                                }
+                            </div>
+                            <div class="tf-product-share">
+                                <ul class="tf-social-icon">
+                                    <li>
+                                        <a href="#" class="social-facebook">
+                                            <span class="icon"><i class="icon-facebook"></i></span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="social-instagram">
+                                            <span class="icon"><i class="icon-instagram"></i></span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="social-x">
+                                            <span class="icon"><i class="icon-x"></i></span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" class="social-snapchat">
+                                            <span class="icon"><i class="icon-snapchat"></i></span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="tf-sticky-btn-atc">
+        <div class="container">
+            <div class="tf-height-observer w-100 d-flex align-items-center">
+                <div class="tf-sticky-atc-product d-flex align-items-center">
+                    <div class="tf-sticky-atc-img">
+                        <img class="lazyload" data-src="@(Model.Item.PrimaryImageUrl?.StartsWith("/") == true ? Model.Item.PrimaryImageUrl : "/" + Model.Item.PrimaryImageUrl)" alt="@Model.Item.ItemName"
+                             src="@(Model.Item.PrimaryImageUrl?.StartsWith("/") == true ? Model.Item.PrimaryImageUrl : "/" + Model.Item.PrimaryImageUrl)">
+                    </div>
+                    <div class="tf-sticky-atc-title fw-5 d-lg-block d-none">@Model.Item.ItemName</div>
+                </div>
+                <div class="tf-sticky-atc-infos">
+                    <form>
+                        <div class="tf-sticky-atc-variant-price text-center tf-select">
+                            <select disabled>
+                                <option selected="selected">@(Model.Item.Category?.CategoryName ?? "Product") / @(Model.Item.GoldKarat?.GoldCarat ?? "") - @Model.Item.SellingPrice.ToString("C")</option>
+                            </select>
+                        </div>
+                        <div class="tf-sticky-atc-btns">
+                            <div class="tf-product-info-quantity">
+                                <div class="wg-quantity">
+                                    <button type="button" class="btn-quantity minus-btn"><i class="icon-minus"></i></button>
+                                    <input class="quantity-product" type="text" name="number" value="1">
+                                    <button type="button" class="btn-quantity plus-btn"><i class="icon-plus"></i></button>
+                                </div>
+                            </div>
+                            <a href="#shoppingCart" data-bs-toggle="offcanvas" 
+                               class="tf-btn btn-fill animate-btn fw-medium btn-add-to-cart"
+                               data-stylecode="@Model.Item.StyleCode">Add to cart</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- /Product Detail -->
+<!-- Product Desciption -->
+<div class="flat-spacing pt-0">
+    <div class="container">
+        <div class="widget-accordion wd-product-descriptions">
+            <div class="accordion-title collapsed" data-bs-target="#description" data-bs-toggle="collapse" aria-expanded="false"
+                 aria-controls="description" role="button">
+                <span class="icon icon-arrow-right-down"></span>
+                <span>Description</span>
+            </div>
+            <div id="description" class="collapse widget-desc">
+                <div class="accordion-body">
+                    <p class="text-main-4">
+                        @Model.Item.Description
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="widget-accordion wd-product-descriptions">
+            <div class="accordion-title collapsed" data-bs-target="#material" data-bs-toggle="collapse" aria-expanded="true"
+                 aria-controls="material" role="button">
+                <span class="icon icon-arrow-right-down"></span>
+                <span>additional information</span>
+            </div>
+            <div id="material" class="collapse widget-material">
+                <div class="accordion-body">
+                    <table class="table-material">
+                        <tbody>
+                            <tr>
+                                <td class="h6">Brand</td>
+                                <td class="h6">@(Model.Item.Brand?.BrandType ?? "N/A")</td>
+                            </tr>
+                            <tr>
+                                <td class="h6">Category</td>
+                                <td class="h6">@(Model.Item.Category?.CategoryName ?? "N/A")</td>
+                            </tr>
+                            <tr>
+                                <td class="h6">Product Type</td>
+                                <td class="h6">@(Model.Item.ProductType?.ProductTypeName ?? "N/A")</td>
+                            </tr>
+                            <tr>
+                                <td class="h6">Gold Karat</td>
+                                <td class="h6">@(Model.Item.GoldKarat?.GoldCarat ?? "N/A")</td>
+                            </tr>
+                            @if(Model.Item.Certificate?.CertifyType != null)
+                            {
+                            <tr>
+                                <td class="h6">Certificate</td>
+                                <td class="h6">@(Model.Item.Certificate?.CertifyType ?? "N/A")</td>
+                            </tr>
+                            }
+                            <tr>
+                                <td class="h6">Style Code</td>
+                                <td class="h6">@Model.Item.StyleCode</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @if (Model.Item.DiamondDetails != null && Model.Item.DiamondDetails.Any())
+        {
+            <div class="widget-accordion wd-product-descriptions">
+                <div class="accordion-title collapsed" data-bs-target="#diamond-details" data-bs-toggle="collapse"
+                     aria-expanded="false" aria-controls="diamond-details" role="button">
+                    <span class="icon icon-arrow-right-down"></span>
+                    <span>diamond details</span>
+                </div>
+                <div id="diamond-details" class="collapse widget-material">
+                    <div class="accordion-body">
+                        <table class="table-material">
+                            <tbody>
+                                @foreach (var diamond in Model.Item.DiamondDetails)
+                                {
+                                    <tr>
+                                        <td class="h6">Quality</td>
+                                        <td class="h6">@(diamond.DiamondQuality?.QualityGrade ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="h6">Pcs</td>
+                                        <td class="h6">@diamond.Pieces</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="h6">Carat</td>
+                                        <td class="h6">@diamond.Carat cts</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (Model.Item.StoneDetails != null && Model.Item.StoneDetails.Any())
+        {
+            <div class="widget-accordion wd-product-descriptions">
+                <div class="accordion-title collapsed" data-bs-target="#stone-details" data-bs-toggle="collapse"
+                     aria-expanded="false" aria-controls="stone-details" role="button">
+                    <span class="icon icon-arrow-right-down"></span>
+                    <span>stone details</span>
+                </div>
+                <div id="stone-details" class="collapse widget-material">
+                    <div class="accordion-body">
+                        <table class="table-material">
+                            <tbody>
+                                @foreach (var stone in Model.Item.StoneDetails)
+                                {
+                                    <tr>
+                                        <td class="h6">Quality</td>
+                                        <td class="h6">@(stone.StoneQuality?.QualityGrade ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="h6">Pcs</td>
+                                        <td class="h6">@stone.Pieces</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="h6">Carat</td>
+                                        <td class="h6">@stone.Carat cts</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<!-- /Product Desciption -->
+<!-- Marquee -->
+<div class="line-y">
+    <div class="tf_marquee-V01 style_3 infiniteSlide" data-speed="100">
+        <!-- item 1 -->
+        <span class="text-hero fw-medium text-main-9">APPLE PAY</span>
+        <i class="icon-rhombus fs-32"></i>
+        <span class="text-clip text-hero">SHOP NOW, PAY LATER</span>
+        <i class="icon-rhombus fs-32"></i>
+        <!-- item 2 -->
+        <span class="text-hero fw-medium text-main-9">APPLE PAY</span>
+        <i class="icon-rhombus fs-32"></i>
+        <span class="text-clip text-hero">SHOP NOW, PAY LATER</span>
+        <i class="icon-rhombus fs-32"></i>
+        <!-- item 3 -->
+        <span class="text-hero fw-medium text-main-9">APPLE PAY</span>
+        <i class="icon-rhombus fs-32"></i>
+        <span class="text-clip text-hero">SHOP NOW, PAY LATER</span>
+        <i class="icon-rhombus fs-32"></i>
+        <!-- item 4 -->
+        <span class="text-hero fw-medium text-main-9">APPLE PAY</span>
+        <i class="icon-rhombus fs-32"></i>
+        <span class="text-clip text-hero">SHOP NOW, PAY LATER</span>
+        <i class="icon-rhombus fs-32"></i>
+    </div>
+</div>
+<!-- /Marquee -->
+<!-- Recently -->
+@if(Model.RecentlyViewedItems != null && Model.RecentlyViewedItems.Any())
+{
+<section class="flat-spacing-3">
+    <div class="container">
+        <div class="sect-top wow fadeInUp">
+            <h3 class="s-title">recently viewed products</h3>
+            <div class="group-btn-slider">
+                <div class="nav-prev-swiper tf-sw-nav">
+                    <i class="icon-arrow-left"></i>
+                </div>
+                <div class="nav-next-swiper tf-sw-nav">
+                    <i class="icon-arrow-right"></i>
+                </div>
+            </div>
+        </div>
+        <div dir="ltr" class="swiper tf-swiper wow fadeInUp" data-preview="4" data-tablet="3" data-mobile-sm="2" data-mobile="2"
+             data-space-lg="30" data-space-md="20" data-space="15" data-pagination="2" data-pagination-sm="2" data-pagination-md="3"
+             data-pagination-lg="4">
+            <div class="swiper-wrapper">
+                @foreach (var recent in Model.RecentlyViewedItems)
+                {
+                    <div class="swiper-slide">
+                        <div class="card_product--V01">
+                            <div class="card_product-wrapper">
+                                <a asp-action="ProductDetail" asp-route-id="@recent.StyleCode" class="product-img">
+                                    <img src="@(recent.PrimaryImageUrl?.StartsWith("/") == true ? recent.PrimaryImageUrl : "/" + recent.PrimaryImageUrl)" 
+                                            data-src="@(recent.PrimaryImageUrl?.StartsWith("/") == true ? recent.PrimaryImageUrl : "/" + recent.PrimaryImageUrl)" 
+                                            alt="@recent.ItemName" class="lazyload img-product">
+                                    @{
+                                        var secondImg = string.IsNullOrEmpty(recent.SecondaryImageUrl) ? recent.PrimaryImageUrl : recent.SecondaryImageUrl;
+                                        var secondImgUrl = secondImg?.StartsWith("/") == true ? secondImg : "/" + secondImg;
+                                    }
+                                    <img src="@secondImgUrl" data-src="@secondImgUrl" alt="@recent.ItemName" class="lazyload img-hover">
+                                </a>
+                                <ul class="list-product-btn">
+                                    <li class="wishlist">
+                                        <a href="javascript:void(0);" 
+                                           class="hover-tooltip tooltip-left box-icon btn-add-wishlist @(Model.WishlistStyleCodes.Contains(recent.StyleCode) ? "active" : "")"
+                                           data-stylecode="@recent.StyleCode">
+                                            <span class="icon icon-heart-Heart"></span>
+                                            <span class="tooltip">Add to Wishlist</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#shoppingCart" data-bs-toggle="offcanvas" class="hover-tooltip tooltip-left box-icon btn-add-to-cart" data-stylecode="@recent.StyleCode">
+                                            <span class="icon icon-shop-cart"></span>
+                                            <span class="tooltip">Add to Cart</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#quickView" data-bs-toggle="modal" class="hover-tooltip tooltip-left box-icon quickview" data-stylecode="@recent.StyleCode">
+                                            <span class="icon icon-view"></span>
+                                            <span class="tooltip">Quick View</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="card_product-info">
+                                <a asp-action="ProductDetail" asp-route-id="@recent.StyleCode" class="name-product h5 fw-normal link text-line-clamp-2">
+                                    @recent.ItemName
+                                </a>
+                                <div class="price-wrap">
+                                    <span class="price-new h5">@recent.SellingPrice.ToString("C")</span>
+                                    @if (recent.MRP > recent.SellingPrice)
+                                    {
+                                        <span class="price-old fw-normal">@recent.MRP.ToString("C")</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="sw-dot-default tf-sw-pagination d-xl-none"></div>
+        </div>
+    </div>
+</section>
+}
+<!-- /Recently -->
+<!-- Icon Box -->
+<div class="flat-spacing-8 bg-main">
+    <div class="container">
+        <div class="tf-swiper swiper sw-iconbox" data-preview="4" data-tablet="3" data-mobile-sm="2" data-mobile="1" data-space-lg="80"
+             data-space-md="30" data-space="15" data-pagination="1" data-pagination-sm="2" data-pagination-md="3" data-pagination-lg="4">
+            <div class="swiper-wrapper">
+                <!-- item 1 -->
+                <div class="swiper-slide">
+                    <div class="box_icon--V01 style-white wow fadeInLeft">
+                        <span class="icon">
+                            <i class="icon-box text-primary"></i>
+                        </span>
+                        <div class="content">
+                            <h4 class="title">Free Shipping</h4>
+                            <p class="text">Enjoy free shipping on all orders</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- item 2 -->
+                <div class="swiper-slide">
+                    <div class="box_icon--V01 style-white wow fadeInLeft" data-wow-delay="0.1s">
+                        <span class="icon">
+                            <i class="icon-credit-card text-primary"></i>
+                        </span>
+                        <div class="content">
+                            <h4 class="title">Flexible Payment</h4>
+                            <p class="text">Pay with Multiple Credit Cards</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- item 3 -->
+                <div class="swiper-slide">
+                    <div class="box_icon--V01 style-white wow fadeInLeft" data-wow-delay="0.2s">
+                        <span class="icon">
+                            <i class="icon-return text-primary"></i>
+                        </span>
+                        <div class="content">
+                            <h4 class="title">14 - Days Return</h4>
+                            <p class="text">Free return/exchange within 30 days</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- item 4 -->
+                <div class="swiper-slide">
+                    <div class="box_icon--V01 style-white wow fadeInLeft" data-wow-delay="0.3s">
+                        <span class="icon">
+                            <i class="icon-headphone text-primary"></i>
+                        </span>
+                        <div class="content">
+                            <h4 class="title">Premium Support</h4>
+                            <p class="text">Enjoy our premium support</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="sw-dot-default style-white tf-sw-pagination"></div>
+        </div>
+    </div>
+</div>
+<!-- /Icon Box -->
+
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org/",
+  "@@type": "Product",
+  "name": "@Model.Item.ItemName",
+  "image": [
+    "@(Model.Item.PrimaryImageUrl?.StartsWith("/") == true ? Model.Item.PrimaryImageUrl : "/" + Model.Item.PrimaryImageUrl)",
+    "@(Model.Item.SecondaryImageUrl?.StartsWith("/") == true ? Model.Item.SecondaryImageUrl : "/" + Model.Item.SecondaryImageUrl)",
+    "@(Model.Item.TertiaryImageUrl?.StartsWith("/") == true ? Model.Item.TertiaryImageUrl : "/" + Model.Item.TertiaryImageUrl)"
+  ],
+  "description": "@Model.Item.Description",
+  "sku": "@Model.Item.StyleCode",
+  "mpn": "@Model.Item.StyleCode",
+  "brand": {
+    "@@type": "Brand",
+    "name": "@(Model.Item.Brand?.BrandType ?? "Yash Gems")"
+  },
+  "offers": {
+    "@@type": "Offer",
+    "url": "@(Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path)",
+    "priceCurrency": "INR",
+    "price": "@Model.Item.SellingPrice",
+    "priceValidUntil": "@DateTime.Now.AddMonths(3).ToString("yyyy-MM-dd")",
+    "availability": "https://schema.org/@(Model.Item.Quantity > 0 ? "InStock" : "OutOfStock")",
+    "itemCondition": "https://schema.org/NewCondition"
+  },
+  "aggregateRating": {
+    "@@type": "AggregateRating",
+    "ratingValue": "@(ViewBag.AverageRating ?? 5)",
+    "reviewCount": "@(ViewBag.ReviewCount ?? 3)"
+  }
+}
+</script>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('.variant-color .color-btn').on('click', function() {
+                var name = $(this).data('name');
+                var value = $(this).data('value');
+                
+                $('#detailsLabel').text(name);
+                $('#detailsValue').text(value);
+                
+                $('.variant-color .color-btn').removeClass('active');
+                $(this).addClass('active');
+            });
+        });
+    </script>
+}

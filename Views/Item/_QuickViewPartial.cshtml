@@ -6,7 +6,7 @@
     if (!string.IsNullOrEmpty(Model.SecondaryImageUrl)) images.Add(Model.SecondaryImageUrl);
     if (!string.IsNullOrEmpty(Model.TertiaryImageUrl)) images.Add(Model.TertiaryImageUrl);
     
-    if (!images.Any()) images.Add("/app/images/products/product-default.jpg");
+    if (!images.Any()) images.Add("/uploads/default.png");
 }
 
 <div class="modal-content">
@@ -16,10 +16,9 @@
             <div class="swiper-wrapper">
                 @foreach (var img in images)
                 {
+                    var imgUrl = img.StartsWith("/") ? img : "/" + img;
                     <div class="swiper-slide">
-                        <div class="item">
-                            <img class="ls-is-cached lazyloaded" data-src="@img" src="@img" alt="@Model.ItemName">
-                        </div>
+                        <img src="@imgUrl" data-src="@imgUrl" alt="@Model.ItemName" class="lazyload">
                     </div>
                 }
             </div>
@@ -37,7 +36,7 @@
     <div class="tf-product-info-wrap">
         <form asp-controller="Cart" asp-action="AddToCart" class="tf-product-info-inner tf-product-info-list" id="quickViewForm">
             <div class="tf-product-info-heading">
-                <a asp-controller="Shop" asp-action="ProductDetail" asp-route-id="@Model.StyleCode" class="product-info-name h4 fw-normal text-uppercase link">
+                <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@Model.StyleCode" class="product-info-name h4 fw-normal text-uppercase link">
                     @Model.ItemName
                 </a>
                 <div class="product-info-price">
@@ -56,28 +55,76 @@
                     </div>
                 </div>
                 <p class="product-infor-sub text-main-4">
-                    @(Model.Description ?? "No description available.")
+                    @(Model.Description ?? "N/A")
                 </p>
+                <div class="product-info-progress-sale">
+                    @if (Model.Quantity > 0 && Model.Quantity <= 5)
+                    {
+                        <h6 class="text-hurry-up fw-normal">Only @Model.Quantity items left</h6>
+                    }
+                    else if (Model.Quantity > 0)
+                    {
+                        <h6 class="text-hurry-up fw-normal">In stock (@Model.Quantity available)</h6>
+                    }
+                    else
+                    {
+                        <h6 class="text-hurry-up fw-normal text-danger">Out of stock</h6>
+                    }
+                    @{
+                        var progress = Model.Quantity > 10 ? 100 : (Model.Quantity * 10);
+                    }
+                    <div class="progress-cart">
+                        <div class="value" style="width: @(progress)%;" data-progress="@progress"></div>
+                    </div>
+                </div>
             </div>
             <div class="tf-product-info-variant">
-                @if (Model.GoldKarat != null)
-                {
-                    <div class="variant-picker-item variant-color">
-                        <div class="variant-picker-label h6 fw-normal">
-                            Material:
-                            <span class="variant-picker-label-value value-currentColor">@Model.GoldKarat.GoldCarat</span>
-                        </div>
+                <div class="variant-picker-item variant-color">
+                    <div class="variant-picker-label h6 fw-normal">
+                        <span id="qv-detailsLabel">Brand</span>:
+                        <span class="variant-picker-label-value value-currentColor" id="qv-detailsValue">@(Model.Brand?.BrandType ?? "Default")</span>
                     </div>
-                }
-                @if (Model.ProductType != null)
+                    <div class="variant-picker-values">
+                         @if(Model.Brand != null)
+                        {
+                            <div class="hover-tooltip color-btn style-image-square active" data-name="Brand" data-value="@(Model.Brand.BrandType)">
+                                <span class="check-color">
+                                    <img src="@(Model.Brand.LogoUrl ?? "/uploads/default.png")" alt="@Model.Brand.BrandType">
+                                </span>
+                                <span class="tooltip">Brand: @Model.Brand.BrandType</span>
+                            </div>
+                        }
+                        @if(Model.ProductType != null)
+                        {
+                            <div class="hover-tooltip color-btn style-image-square" data-name="Type" data-value="@(Model.ProductType.ProductTypeName)">
+                                <span class="check-color">
+                                    <img src="@(Model.ProductType.ImageUrl ?? "/uploads/default.png")" alt="@Model.ProductType.ProductTypeName">
+                                </span>
+                                <span class="tooltip">Type: @Model.ProductType.ProductTypeName</span>
+                            </div>
+                        }
+                        @if(Model.Category != null)
+                        {
+                            <div class="hover-tooltip color-btn style-image-square" data-name="Category" data-value="@(Model.Category.CategoryName)">
+                                <span class="check-color">
+                                    <img src="@(Model.Category.ImageUrl ?? "/uploads/default.png")" alt="@Model.Category.CategoryName">
+                                </span>
+                                <span class="tooltip">Category: @Model.Category.CategoryName</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @if (Model.GoldKarat != null)
                 {
                     <div class="variant-picker-item variant-size">
                         <div class="variant-picker-label h6 fw-normal">
-                            Type:
-                            <span class="variant-picker-label-value value-currentSize">@Model.ProductType.ProductTypeName</span>
+                            Karat:
+                            <span class="variant-picker-label-value value-currentSize">@Model.GoldKarat.GoldCarat</span>
                         </div>
                     </div>
                 }
+
                 <div class="variant-picker-item">
                     <div class="variant-picker-label h6 fw-normal">Quantity</div>
                     <div class="variant-picker-values">
@@ -89,6 +136,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="tf-product-total-quantity">
                 <div class="group-btn">
                     @if (Model.Quantity > 0)
@@ -105,8 +153,8 @@
                     }
                     else
                     {
-                        <a href="javascript:void(0);" class="tf-btn btn-fill-2 animate-btn text-uppercase fw-medium disabled">
-                            <span class="text-line-clamp-1">OUT OF STOCK</span>
+                        <a href="#shoppingCart" data-bs-toggle="offcanvas" class="tf-btn btn-unavailable animate-btn text-line-clamp-1 text-center text-nowrap">
+                            This item is currently unavailable
                         </a>
                     }
                     <div class="group-btn-action">
@@ -125,10 +173,27 @@
                     </a>
                 }
             </div>
-            <a asp-controller="Shop" asp-action="ProductDetail" asp-route-id="@Model.StyleCode" class="tf-btn-line">
+            <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@Model.StyleCode" class="tf-btn-line">
                 <span class="text-body">View full details</span>
                 <i class="icon icon-arrow-top-right"></i>
             </a>
         </form>
     </div>
 </div>
+
+<script>
+    // Embedded script to handle QuickView specific interactions
+    $(document).ready(function() {
+         // Variant interactions for QuickView
+        $('#quickViewForm .variant-color .color-btn').on('click', function() {
+            var name = $(this).data('name');
+            var value = $(this).data('value');
+            
+            $('#qv-detailsLabel').text(name);
+            $('#qv-detailsValue').text(value);
+            
+            $('#quickViewForm .variant-color .color-btn').removeClass('active');
+            $(this).addClass('active');
+        });
+    });
+</script>

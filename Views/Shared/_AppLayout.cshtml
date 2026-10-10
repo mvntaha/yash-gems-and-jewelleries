@@ -8,8 +8,12 @@
     var navNewArrivals = await LayoutService.GetNewArrivalsAsync(7);
     var navBrands = await LayoutService.GetBrandsAsync(7);
     var userId = UserManager.GetUserId(User);
-    var cartCount = await CartService.GetCartCountAsync(userId);
-    var wishCount = await LayoutService.GetWishlistCountAsync(userId);
+    var guestId = Context.Request.Cookies["GuestCartId"];
+    var cartCount = await CartService.GetCartCountAsync(userId, guestId);
+    var wishCount = await LayoutService.GetWishlistCountAsync(userId ?? string.Empty);
+
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
 }
 <!DOCTYPE html>
 <html>
@@ -17,6 +21,25 @@
     <meta charset="utf-8">
     <title>@ViewData["Title"] - Yash Gems & Jewelleries</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="@(ViewData["MetaDescription"] ?? "Explore exquisite handcrafted jewelry at Yash Gems & Jewelleries. Timeless elegance and modern designs.")">
+    <meta name="keywords" content="@(ViewData["MetaKeywords"] ?? "jewelry, gems, rings, necklaces, diamond, gold, handcrafted")">
+    <link rel="canonical" href="@(ViewData["CanonicalUrl"] ?? Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path)">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="@(ViewData["OgType"] ?? "website")">
+    <meta property="og:url" content="@(ViewData["CanonicalUrl"] ?? Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path)">
+    <meta property="og:title" content="@(ViewData["Title"] ?? "Yash Gems & Jewelleries")">
+    <meta property="og:description" content="@(ViewData["MetaDescription"] ?? "Explore exquisite handcrafted jewelry at Yash Gems & Jewelleries.")">
+    <meta property="og:image" content="@(ViewData["OgImage"] ?? Context.Request.Scheme + "://" + Context.Request.Host + "/app/images/logo/logo.png")">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="@(ViewData["CanonicalUrl"] ?? Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path)">
+    <meta property="twitter:title" content="@(ViewData["Title"] ?? "Yash Gems & Jewelleries")">
+    <meta property="twitter:description" content="@(ViewData["MetaDescription"] ?? "Explore exquisite handcrafted jewelry at Yash Gems & Jewelleries.")">
+    <meta property="twitter:image" content="@(ViewData["OgImage"] ?? Context.Request.Scheme + "://" + Context.Request.Host + "/app/images/logo/logo.png")">
 
     <!-- font -->
     <link rel="stylesheet" href="/app/fonts//fonts.css">
@@ -65,7 +88,7 @@
                                         $200
                                     </p>
                                     <span class="br-line"></span>
-                                    <a asp-controller="Shop" asp-action="Index" class="tf-btn-line style-white-2 text-uppercase lh-19">
+                                    <a asp-controller="Item" asp-action="Index" class="tf-btn-line style-white-2 text-uppercase lh-19">
                                         Shop Now
                                         <i class="icon-arrow-top-right-2 fs-10"></i>
                                     </a>
@@ -79,7 +102,7 @@
                                         $200
                                     </p>
                                     <span class="br-line"></span>
-                                    <a asp-controller="Shop" asp-action="Index" class="tf-btn-line style-white-2 text-uppercase lh-19">
+                                    <a asp-controller="Item" asp-action="Index" class="tf-btn-line style-white-2 text-uppercase lh-19">
                                         Shop Now
                                         <i class="icon-arrow-top-right-2 fs-10"></i>
                                     </a>
@@ -103,17 +126,17 @@
                     </div>
                     <div class="col-xl-2 col-md-4 col-6">
                         <a asp-controller="Home" asp-action="Index" class="logo-site">
-                            <img src="/app/images/logo/logo.svg" alt="">
+                            <img src="/app/images/logo/logo.svg" alt="Yash Logo">
                         </a>
                     </div>
                     <div class="col-xl-8 d-none d-xl-block">
                         <nav class="box-navigation">
                             <ul class="box-nav-menu">
-                                <li class="menu-item active">
+                                <li class="menu-item @(currentController == "Home" && currentAction == "Index" ? "active" : "")">
                                     <a asp-controller="Home" asp-action="Index" class="item-link">Home</a>
                                 </li>
-                                <li class="menu-item">
-                                    <a asp-controller="Shop" asp-action="Index" class="item-link">Shop</a>
+                                <li class="menu-item @(currentController == "Item" ? "active" : "")">
+                                    <a asp-controller="Item" asp-action="Index" class="item-link">Shop</a>
                                 </li>
                                 <li class="menu-item">
                                     <a href="javascript:void(0)" class="item-link">
@@ -130,7 +153,7 @@
                                                             @foreach (var product in navFeaturedProducts)
                                                             {
                                                                 <li>
-                                                                    <a asp-controller="Shop" asp-action="ProductDetail" asp-route-id="@product.StyleCode" class="menu-link-text link">@product.ItemName</a>
+                                                                    <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@product.StyleCode" class="menu-link-text link">@product.ItemName</a>
                                                                 </li>
                                                             }
                                                         </ul>
@@ -140,7 +163,7 @@
                                                         <ul class="menu-list">
                                                             @foreach (var category in navCategories)
                                                             {
-                                                                <li><a asp-controller="Shop" asp-action="Index" asp-route-categoryIds="@category.CategoryId" class="menu-link-text link">@category.CategoryName</a></li>
+                                                                <li><a asp-controller="Item" asp-action="Index" asp-route-categoryIds="@category.CategoryId" class="menu-link-text link">@category.CategoryName</a></li>
                                                             }
                                                         </ul>
                                                     </div>
@@ -150,7 +173,7 @@
                                                             @foreach (var product in navNewArrivals)
                                                             {
                                                                 <li>
-                                                                    <a asp-controller="Shop" asp-action="ProductDetail" asp-route-id="@product.StyleCode" class="menu-link-text link">@product.ItemName</a>
+                                                                    <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@product.StyleCode" class="menu-link-text link">@product.ItemName</a>
                                                                 </li>
                                                             }
                                                         </ul>
@@ -161,7 +184,7 @@
                                                             @foreach (var brand in navBrands)
                                                             {
                                                                 <li>
-                                                                    <a asp-controller="Shop" asp-action="Index" asp-route-brandIds="@brand.BrandId" class="menu-link-text link">@brand.BrandType</a>
+                                                                    <a asp-controller="Item" asp-action="Index" asp-route-brandIds="@brand.BrandId" class="menu-link-text link">@brand.BrandType</a>
                                                                 </li>
                                                             }
                                                         </ul>
@@ -172,17 +195,19 @@
                                                     {
                                                         <div class="card_product--V01">
                                                             <div class="card_product-wrapper aspect-ratio-1">
-                                                                <a asp-controller="Shop" asp-action="ProductDetail" asp-route-id="@product.StyleCode" class="product-img">
-                                                                    <img src="@(string.IsNullOrEmpty(product.PrimaryImageUrl) ? "/app/images/products/product-28.jpg" : product.PrimaryImageUrl)" 
-                                                                         data-src="@(string.IsNullOrEmpty(product.PrimaryImageUrl) ? "/app/images/products/product-28.jpg" : product.PrimaryImageUrl)"
-                                                                         alt="@product.ItemName" class="lazyload img-product">
-                                                                    <img src="@(string.IsNullOrEmpty(product.SecondaryImageUrl) ? product.PrimaryImageUrl : product.SecondaryImageUrl)" 
-                                                                         data-src="@(string.IsNullOrEmpty(product.SecondaryImageUrl) ? product.PrimaryImageUrl : product.SecondaryImageUrl)"
-                                                                         alt="@product.ItemName" class="lazyload img-hover">
+                                                                <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@product.StyleCode" class="product-img">
+                                                                    @{
+                                                                        var primaryImg = product.PrimaryImageUrl;
+                                                                        var primaryImgUrl = string.IsNullOrEmpty(primaryImg) ? "/app/images/products/product-28.jpg" : (primaryImg.StartsWith("/") ? primaryImg : "/" + primaryImg);
+                                                                        var secondaryImg = product.SecondaryImageUrl;
+                                                                        var secondaryImgUrl = string.IsNullOrEmpty(secondaryImg) ? primaryImgUrl : (secondaryImg.StartsWith("/") ? secondaryImg : "/" + secondaryImg);
+                                                                    }
+                                                                    <img src="@primaryImgUrl" data-src="@primaryImgUrl" alt="@product.ItemName" class="lazyload img-product">
+                                                                    <img src="@secondaryImgUrl" data-src="@secondaryImgUrl" alt="@product.ItemName" class="lazyload img-hover">
                                                                 </a>
                                                             </div>
                                                             <div class="card_product-info">
-                                                                <a asp-controller="Shop" asp-action="ProductDetail" asp-route-id="@product.StyleCode" class="name-product h5 fw-normal link text-line-clamp-2">
+                                                                <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@product.StyleCode" class="name-product h5 fw-normal link text-line-clamp-2">
                                                                     @product.ItemName
                                                                 </a>
                                                                 <div class="price-wrap">
@@ -200,12 +225,17 @@
                                         </div>
                                     </div>
                                 </li>
-                                <li class="menu-item">
-                                    <a ssp-controller="Home" asp-action="AboutUs" class="item-link">
+                                <li class="menu-item @(currentController == "Home" && currentAction == "Learn" ? "active" : "")">
+                                    <a href="@Url.Action("Learn", "Home")" class="item-link">
+                                        Learn
+                                    </a>
+                                </li>
+                                <li class="menu-item @(currentController == "Home" && currentAction == "AboutUs" ? "active" : "")">
+                                    <a asp-controller="Home" asp-action="AboutUs" class="item-link">
                                         About Us
                                     </a>
                                 </li>
-                                <li class="menu-item position-relative">
+                                <li class="menu-item position-relative @(currentController == "Home" && currentAction == "ContactUs" ? "active" : "")">
                                     <a asp-controller="Home" asp-action="ContactUs" class="item-link">
                                         Contact Us
                                     </a>
@@ -222,10 +252,10 @@
                             </li>
                             <li class="br-line d-none d-xl-flex"></li>
                             <li class="d-none d-md-inline-flex">
-                                <partial name="_LoginPartial" />
+                                <partial name="_AuthPartial" />
                             </li>
                             <li class="d-none d-md-inline-flex" id="wishlist-indicator-container">
-                                <partial name="~/Views/Account/_WishlistIndicatorPartial.cshtml" model="wishCount" />
+                                <partial name="~/Views/Wishlist/_WishlistIndicatorPartial.cshtml" model="wishCount" />
                             </li>
                             <li class="d-inline-flex" id="cart-indicator-container">
                                 <partial name="~/Views/Cart/_CartIndicatorPartial.cshtml" model="cartCount" />
@@ -238,6 +268,10 @@
         <!-- /Header -->
 
         <!-- Body -->
+            <div class="container mt-3">
+                @* <partial name="_FeedbackMessage" /> *@
+                <div id="js-feedback-container"></div>
+            </div>
             @RenderBody()
         <!-- /Body -->
 
@@ -247,49 +281,49 @@
                 <div class="container">
                     <ul class="category-list justify-content-xl-center">
                         <li>
-                            <a asp-controller="Shop" asp-action="Index" class="tf-btn btn-line has-icon link">
+                            <a asp-controller="Item" asp-action="Index" class="tf-btn btn-line has-icon link">
                                 <span class="text h6 text-uppercase fw-normal">New Collection</span>
                                 <i class="icon icon-arrow-top-right"></i>
                             </a>
                         </li>
                         <li>
-                            <a asp-controller="Shop" asp-action="Index" class="tf-btn btn-line has-icon link">
+                            <a asp-controller="Item" asp-action="Index" class="tf-btn btn-line has-icon link">
                                 <span class="text h6 text-uppercase fw-normal">All Jewelry</span>
                                 <i class="icon icon-arrow-top-right"></i>
                             </a>
                         </li>
                         <li>
-                            <a asp-controller="Shop" asp-action="Index" class="tf-btn btn-line has-icon link">
+                            <a asp-controller="Item" asp-action="Index" class="tf-btn btn-line has-icon link">
                                 <span class="text h6 text-uppercase fw-normal">Charms</span>
                                 <i class="icon icon-arrow-top-right"></i>
                             </a>
                         </li>
                         <li>
-                            <a asp-controller="Shop" asp-action="Index" class="tf-btn btn-line has-icon link">
+                            <a asp-controller="Item" asp-action="Index" class="tf-btn btn-line has-icon link">
                                 <span class="text h6 text-uppercase fw-normal">Bracelets</span>
                                 <i class="icon icon-arrow-top-right"></i>
                             </a>
                         </li>
                         <li>
-                            <a asp-controller="Shop" asp-action="Index" class="tf-btn btn-line has-icon link">
+                            <a asp-controller="Item" asp-action="Index" class="tf-btn btn-line has-icon link">
                                 <span class="text h6 text-uppercase fw-normal">Rings</span>
                                 <i class="icon icon-arrow-top-right"></i>
                             </a>
                         </li>
                         <li>
-                            <a asp-controller="Shop" asp-action="Index" class="tf-btn btn-line has-icon link">
+                            <a asp-controller="Item" asp-action="Index" class="tf-btn btn-line has-icon link">
                                 <span class="text h6 text-uppercase fw-normal">Earrings</span>
                                 <i class="icon icon-arrow-top-right"></i>
                             </a>
                         </li>
                         <li>
-                            <a asp-controller="Shop" asp-action="Index" class="tf-btn btn-line has-icon link">
+                            <a asp-controller="Item" asp-action="Index" class="tf-btn btn-line has-icon link">
                                 <span class="text h6 text-uppercase fw-normal">Gifts</span>
                                 <i class="icon icon-arrow-top-right"></i>
                             </a>
                         </li>
                         <li>
-                            <a asp-controller="Shop" asp-action="Index" class="tf-btn btn-line has-icon link">
+                            <a asp-controller="Item" asp-action="Index" class="tf-btn btn-line has-icon link">
                                 <span class="text h6 text-uppercase fw-normal">Collections</span>
                                 <i class="icon icon-arrow-top-right"></i>
                             </a>
@@ -311,9 +345,10 @@
                                 </div>
                                 <div class="box-email">
                                     <p class="text-body text-main-3">Get early access to new products, exclusive deals & more.</p>
-                                    <form class="form-email">
+                                    <form class="form-email" id="newsletter-form">
+                                        @Html.AntiForgeryToken()
                                         <fieldset>
-                                            <input class="bg-transparent" type="text" placeholder="Your_email@example.com" required>
+                                            <input class="bg-transparent" type="email" name="email" placeholder="Enter your email" required>
                                         </fieldset>
                                         <div class="box-btn">
                                             <button type="submit" class="btn-submit link">
@@ -373,8 +408,8 @@
                                     <div class="tf-collapse-content">
                                         <ul class="footer-menu-list">
                                             <li><a asp-controller="Home" asp-action="Index" class="text-main-4 link">Home</a></li>
-                                            <li><a asp-controller="Shop" asp-action="Index" class="text-main-4 link">Shop</a></li>
-                                            <li><a asp-controller="Account" asp-action="Wishlist" class="text-main-4 link">My Wishlist</a></li>
+                                            <li><a asp-controller="Item" asp-action="Index" class="text-main-4 link">Shop</a></li>
+                                            <li><a asp-controller="Wishlist" asp-action="Index" class="text-main-4 link">My Wishlist</a></li>
                                             <li><a asp-controller="Cart" asp-action="Index" class="text-main-4 link">Cart</a></li>
                                             <li><a asp-controller="Account" asp-action="Order" class="text-main-4 link">Orders</a></li>
                                         </ul>
@@ -387,6 +422,7 @@
                                     <div class="tf-collapse-content">
                                         <ul class="footer-menu-list">
                                             <li><a asp-controller="Home" asp-action="AboutUs" class="text-main-4 link">Our Story</a></li>
+                                            <li><a asp-controller="Home" asp-action="Learn" class="text-main-4 link">Learn</a></li>
                                             <li><a asp-controller="Account" asp-action="Inquiries" class="text-main-4 link">Inquiries</a></li>
                                             <li><a asp-controller="Home" asp-action="ContactUs" class="text-main-4 link">Contact Us</a></li>
                                             <li><a asp-controller="Account" asp-action="Index" class="text-main-4 link">Account</a></li>
@@ -448,7 +484,7 @@
         <div class="mb-canvas-content">
             <div class="mb-body">
                 <div class="mb-content-top">
-                    <form class="form-search" action="/Shop" method="get">
+                    <form class="form-search" action="/Item" method="get">
                         <fieldset>
                             <input type="text" placeholder="Search for anything..." class="" name="searchQuery" tabindex="0" value="" aria-required="true"
                                    required="">
@@ -471,9 +507,9 @@
                                 <ul class="sub-nav-menu">
                                     @foreach (var category in navCategories)
                                     {
-                                        <li><a asp-controller="Shop" asp-action="Index" asp-route-categoryIds="@category.CategoryId" class="sub-nav-link">@category.CategoryName</a></li>
+                                        <li><a asp-controller="Item" asp-action="Index" asp-route-categoryIds="@category.CategoryId" class="sub-nav-link">@category.CategoryName</a></li>
                                     }
-                                    <li><a asp-controller="Shop" asp-action="Index" class="sub-nav-link">View All Jewelry</a></li>
+                                    <li><a asp-controller="Item" asp-action="Index" class="sub-nav-link">View All Jewelry</a></li>
                                 </ul>
                             </div>
                         </li>
@@ -487,7 +523,7 @@
                                 <ul class="sub-nav-menu">
                                     @foreach (var product in navFeaturedProducts)
                                     {
-                                        <li><a asp-controller="Shop" asp-action="ProductDetail" asp-route-id="@product.StyleCode" class="sub-nav-link">@product.ItemName</a></li>
+                                        <li><a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@product.StyleCode" class="sub-nav-link">@product.ItemName</a></li>
                                     }
                                 </ul>
                             </div>
@@ -502,7 +538,7 @@
                                 <ul class="sub-nav-menu">
                                     @foreach (var product in navNewArrivals)
                                     {
-                                        <li><a asp-controller="Shop" asp-action="ProductDetail" asp-route-id="@product.StyleCode" class="sub-nav-link">@product.ItemName</a></li>
+                                        <li><a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@product.StyleCode" class="sub-nav-link">@product.ItemName</a></li>
                                     }
                                 </ul>
                             </div>
@@ -517,10 +553,15 @@
                                 <ul class="sub-nav-menu">
                                     @foreach (var brand in navBrands)
                                     {
-                                        <li><a asp-controller="Shop" asp-action="Index" asp-route-brandIds="@brand.BrandId" class="sub-nav-link">@brand.BrandType</a></li>
+                                        <li><a asp-controller="Item" asp-action="Index" asp-route-brandIds="@brand.BrandId" class="sub-nav-link">@brand.BrandType</a></li>
                                     }
                                 </ul>
                             </div>
+                        </li>
+                        <li class="nav-mb-item">
+                            <a href="@Url.Action("Learn", "Home")" class="collapsed mb-menu-link" aria-expanded="true">
+                                <span>Learn</span>
+                            </a>
                         </li>
                         <li class="nav-mb-item">
                             <a asp-controller="Home" asp-action="AboutUs" class="collapsed mb-menu-link" aria-expanded="true">
@@ -536,7 +577,7 @@
                 </div>
                 <div class="mb-other-content">
                     <div class="group-icon">
-                        <a asp-controller="Account" asp-action="Wishlist" class="site-nav-icon">
+                        <a href="@Url.Action("Index", "Wishlist")" class="site-nav-icon">
                             <i class="icon icon-hearth"></i>
                             Wishlist
                         </a>
@@ -619,13 +660,12 @@
                     <h3 class="title fw-normal text-uppercase">login</h3>
                 </div>
                 <div class="modal-bottom">
-                    <div id="login-error" class="alert alert-danger" style="display:none; margin-bottom:15px;"></div>
                     <form class="form-log" id="loginForm" method="post">
                         @Html.AntiForgeryToken()
                         <div class="form-content">
                             <fieldset class="tf-field">
                                 <input class="tf-input" type="email" name="Input.Email" placeholder="hello@yash.com" required>
-                                <label class="tf-lable">Username *</label>
+                                <label class="tf-lable">Email *</label>
                             </fieldset>
                             <fieldset class="tf-field password-wrapper">
                                 <input class="tf-input password-field" type="password" name="Input.Password" placeholder="••••••••" required>
@@ -642,27 +682,17 @@
                                 Forgot password?
                             </a>
                         </div>
+                        <div id="login-error" class="feedback-message error"></div>
                         <button type="submit" class="btn-submit tf-btn btn-fill-2 w-100">
                             LOG IN
                         </button>
                     </form>
                     <div class="other-login">
-                        <a href="#" class="tf-btn btn-fill-3 ic-abs w-100 fw-medium">
-                            <span class="icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="12" cy="12" r="12" fill="#3B5998" />
-                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                          d="M15.1163 7.992L13.9867 7.99275C13.101 7.99275 12.9293 8.4135 12.9293 9.03075V10.3927H15.042L14.7667 12.5265H12.9293V18H10.7265V12.5265H8.8845V10.3927H10.7265V8.82C10.7265 6.99375 11.8417 6 13.47 6C14.25 6 14.9205 6.05775 15.1163 6.084V7.992ZM12 0C5.373 0 0 5.37225 0 12C0 18.627 5.373 24 12 24C18.6278 24 24 18.627 24 12C24 5.37225 18.6278 0 12 0Z"
-                                          fill="white" />
-                                </svg>
-                            </span>
-                            Log in with Facebook
-                        </a>
                         <form method="post" action="/Account/ExternalLogin">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="provider" value="Google" />
                             <input type="hidden" name="returnUrl" value="/" />
-                            <button type="submit" class="tf-btn style-2 ic-abs w-100 fw-medium" style="background: white; border: 1px solid #e5e5e5; cursor: pointer;">
+                            <button type="submit" class="tf-btn style-2 ic-abs w-100 fw-medium">
                                 <span class="icon">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <g>
@@ -682,6 +712,19 @@
                                     </svg>
                                 </span>
                                 Log in with Google
+                            </button>
+                        </form>
+                        <form method="post" action="/Account/ExternalLogin">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="provider" value="GitHub" />
+                            <input type="hidden" name="returnUrl" value="/" />
+                            <button type="submit" class="tf-btn style-2 ic-abs w-100 fw-medium mt-2" style="background: #24292e; color: white;">
+                                <span class="icon">
+                                    <svg height="24" viewBox="0 0 16 16" version="1.1" width="24" aria-hidden="true" fill="white">
+                                        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                                    </svg>
+                                </span>
+                                Log in with GitHub
                             </button>
                         </form>
                     </div>
@@ -710,55 +753,41 @@
                     <h3 class="title fw-normal text-uppercase">create account</h3>
                 </div>
                 <div class="modal-bottom">
-                    <div id="register-error" class="alert alert-danger" style="display:none; margin-bottom:15px;"></div>
-                    <div id="register-success" class="alert alert-success" style="display:none; margin-bottom:15px;"></div>
                     <form class="form-log" id="registerForm" method="post">
                         @Html.AntiForgeryToken()
                         <div class="form-content">
                             <fieldset class="tf-field">
-                                <input class="tf-input" type="text" name="FirstName" placeholder required>
+                                <input class="tf-input" type="text" name="FirstName" placeholder="Enter your first name" required>
                                 <label class="tf-lable">First name *</label>
                             </fieldset>
                             <fieldset class="tf-field">
-                                <input class="tf-input" type="text" name="LastName" placeholder required>
+                                <input class="tf-input" type="text" name="LastName" placeholder="Enter your last name" required>
                                 <label class="tf-lable">Last name *</label>
                             </fieldset>
                             <fieldset class="tf-field">
-                                <input class="tf-input" type="email" name="Email" placeholder value="Hello@yash.com" required>
+                                <input class="tf-input" type="email" name="Email" placeholder="email@example.com" required>
                                 <label class="tf-lable">Email *</label>
                             </fieldset>
                             <fieldset class="tf-field password-wrapper">
-                                <input class="tf-input password-field" type="password" name="Password" placeholder required>
+                                <input class="tf-input password-field" type="password" name="Password" placeholder="••••••••" required>
                                 <label class="tf-lable">Password *</label>
                                 <span class=" toggle-pass icon-show-password"></span>
                             </fieldset>
                         </div>
                         <div class="bottom">
                             <div class="checkbox-wrap align-items-start">
-                                <input id="confirm" name="Newsletter" type="checkbox" class="tf-check flex-shrink-0">
+                                <input id="confirm" type="checkbox" class="tf-check flex-shrink-0" required>
                                 <label for="confirm" class="text-caption">
-                                    Yes, sign me up for the Yash Newsletter. I confirm I am over 16 years old. I would
-                                    like to receive digital
-                                    communications (email and SMS) from Yash about Yash products and exclusive offers.
+                                    I agree to the Terms and Conditions and Privacy Policy.
                                 </label>
                             </div>
                         </div>
+                        <div id="register-error" class="feedback-message error"></div>
                         <button type="submit" class="btn-submit tf-btn btn-fill-2 w-100">
                             REGISTER
                         </button>
                     </form>
                     <div class="other-login">
-                        <a href="#" class="tf-btn btn-fill-3 ic-abs w-100 fw-medium">
-                            <span class="icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="12" cy="12" r="12" fill="#3B5998" />
-                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                          d="M15.1163 7.992L13.9867 7.99275C13.101 7.99275 12.9293 8.4135 12.9293 9.03075V10.3927H15.042L14.7667 12.5265H12.9293V18H10.7265V12.5265H8.8845V10.3927H10.7265V8.82C10.7265 6.99375 11.8417 6 13.47 6C14.25 6 14.9205 6.05775 15.1163 6.084V7.992ZM12 0C5.373 0 0 5.37225 0 12C0 18.627 5.373 24 12 24C18.6278 24 24 18.627 24 12C24 5.37225 18.6278 0 12 0Z"
-                                          fill="white" />
-                                </svg>
-                            </span>
-                            Log in with Facebook
-                        </a>
                         <form method="post" action="/Account/ExternalLogin">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="provider" value="Google" />
@@ -785,6 +814,19 @@
                                 Log in with Google
                             </button>
                         </form>
+                        <form method="post" action="/Account/ExternalLogin">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="provider" value="GitHub" />
+                            <input type="hidden" name="returnUrl" value="/" />
+                            <button type="submit" class="tf-btn style-2 ic-abs w-100 fw-medium mt-2" style="background: #24292e; color: white; border: 1px solid #24292e; cursor: pointer;">
+                                <span class="icon">
+                                    <svg height="24" viewBox="0 0 16 16" version="1.1" width="24" aria-hidden="true" fill="white">
+                                        <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+                                    </svg>
+                                </span>
+                                Log in with GitHub
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -802,16 +844,16 @@
                 Please enter your registered email address to receive an email to reset
                 your password
             </p>
-            <div id="reset-error" class="alert alert-danger" style="display:none; margin-bottom:15px;"></div>
-            <div id="reset-success" class="alert alert-success" style="display:none; margin-bottom:15px;"></div>
             <form class="form-reset" id="resetForm" method="post">
                 @Html.AntiForgeryToken()
                 <div class="form-content">
                     <fieldset class="tf-field">
-                        <input class="tf-input" type="email" name="Input.Email" placeholder required>
+                        <input class="tf-input" type="email" name="Input.Email" placeholder="Enter your email" required>
                         <label class="tf-lable">Email *</label>
                     </fieldset>
                 </div>
+                <div id="reset-error" class="feedback-message error"></div>
+                <div id="reset-success" class="feedback-message success"></div>
                 <button type="submit" class="tf-btn btn-fill w-100 fw-medium animate-btn">
                     SUBMIT
                 </button>
@@ -823,7 +865,7 @@
     <div class="offcanvas offcanvas-end popup-shopping-cart" id="shoppingCart">
         <div class="canvas-wrapper">
             @{
-                var cartModel = await CartService.GetCartAsync(userId);
+                var cartModel = await CartService.GetCartAsync(userId, guestId);
             }
             <partial name="~/Views/Cart/_CartSidebarPartial.cshtml" model="cartModel" />
         </div>
@@ -834,7 +876,7 @@
         <div class="offcanvas-content">
             <div class="container">
                 <div class="popup-content">
-                    <form class="form-search" action="/Shop" method="get">
+                    <form class="form-search" action="/Item" method="get">
                         <fieldset>
                             <input type="text" placeholder="ENTER YOUR SEARCH" class="" name="searchQuery" tabindex="0" value="" aria-required="true"
                                    required="">
@@ -858,7 +900,7 @@
                                     @foreach (var cat in searchCategories)
                                     {
                                         <li>
-                                            <a asp-controller="Shop" asp-action="Index" asp-route-categoryIds="@cat.CategoryId" class="link-item text-main-4 link">@cat.CategoryName</a>
+                                            <a asp-controller="Item" asp-action="Index" asp-route-categoryIds="@cat.CategoryId" class="link-item text-main-4 link">@cat.CategoryName</a>
                                         </li>
                                     }
                                 }
@@ -877,11 +919,11 @@
                                     {
                                         <li>
                                             <div class="tf-product-mini-view">
-                                                <a asp-controller="Shop" asp-action="ProductDetail" asp-route-id="@item.StyleCode" class="prd-image">
-                                                    <img src="@(item.PrimaryImageUrl ?? "/app/images/products/product-default.jpg")" alt="@item.ItemName">
+                                                <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@item.StyleCode" class="prd-image">
+                                                    <img src="@(string.IsNullOrEmpty(item.PrimaryImageUrl) ? "/uploads/default.png" : (item.PrimaryImageUrl.StartsWith("/") ? item.PrimaryImageUrl : "/" + item.PrimaryImageUrl))" alt="@item.ItemName">
                                                 </a>
                                                 <div class="prd-content">
-                                                    <a asp-controller="Shop" asp-action="ProductDetail" asp-route-id="@item.StyleCode" class="prd-name link text-uppercase">
+                                                    <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@item.StyleCode" class="prd-name link text-uppercase">
                                                         @item.ItemName
                                                     </a>
                                                     <div class="price-wrap">
@@ -921,7 +963,7 @@
     <!-- Toolbar -->
     <div class="tf-toolbar-bottom">
         <div class="toolbar-item">
-            <a asp-controller="Shop" asp-action="Index">
+            <a asp-controller="Item" asp-action="Index">
                 <span class="toolbar-icon">
                     <i class="icon icon-menu-home"></i>
                 </span>
@@ -945,7 +987,7 @@
             </a>
         </div>
         <div class="toolbar-item">
-            <a asp-controller="Account" asp-action="Wishlist">
+            <a asp-controller="Wishlist" asp-action="Index">
                 <span class="toolbar-icon">
                     <i class="icon icon-hearth-3"></i>
                     <span class="toolbar-count wishlist-count">@wishCount</span>
@@ -954,9 +996,9 @@
             </a>
         </div>
         <div class="toolbar-item">
-            <a asp-controller="Cart" asp-action="Index">
+            <a href="#shoppingCart" data-bs-toggle="offcanvas">
                 <span class="toolbar-icon">
-                    <i class="icon icon-cart-2"></i>
+                    <i class="icon icon-cart"></i>
                     <span class="toolbar-count cart-count">@cartCount</span>
                 </span>
                 <span class="toolbar-label">Cart</span>
@@ -981,6 +1023,9 @@
     <script src="/app/js/main.js"></script>
     <script src="/app/js/cart.js"></script>
     <script src="/app/js/site.js"></script>
+    <script src="/app/js/zoom.js"></script>
+    <script src="/app/js/photoswipe-lightbox.umd.min.js"></script>
+    <script src="/app/js/photoswipe.umd.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Function to handle form submission via AJAX
@@ -1001,10 +1046,7 @@
                     try {
                         const response = await fetch(endpoint, {
                             method: 'POST',
-                            body: formData,
-                            headers: {
-                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                            }
+                            body: formData
                         });
                         if (response.redirected) {
                             window.location.href = response.url;
@@ -1069,37 +1111,51 @@
             $(document).on('click', '.quickview', function(e) {
                 e.preventDefault();
                 var styleCode = $(this).data('stylecode');
-                var $modal = $('#quickView');
+                var modalEl = document.getElementById('quickView');
+                var $modalDialog = $(modalEl).find('.modal-dialog');
                 
                 // Show loading state
-                $modal.find('.modal-dialog').html('<div class="modal-content"><div class="modal-body text-center p-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-3">Loading product details...</p></div></div>');
-                $modal.modal('show');
+                $modalDialog.html('<div class="modal-content"><div class="modal-body text-center p-5"><div class="spinner-border text-primary" role="status"></div></div></div>');
+                
+                // Use Bootstrap 5 API
+                var myModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                myModal.show();
 
                 $.ajax({
-                    url: '/Shop/QuickView/' + styleCode,
+                    url: '/Item/QuickView/' + styleCode,
                     type: 'GET',
                     success: function(html) {
-                        $modal.find('.modal-dialog').html(html);
+                        $modalDialog.html(html);
                         
                         // Initialize Swiper for the modal images
                         if (typeof Swiper !== 'undefined') {
-                            new Swiper($modal.find('.tf-product-media-main')[0], {
-                                slidesPerView: 1,
-                                spaceBetween: 10,
-                                navigation: {
-                                    nextEl: '.swiper-button-next',
-                                    prevEl: '.swiper-button-prev',
-                                },
-                            });
+                            var swiperEl = $(modalEl).find('.tf-single-slide')[0];
+                            if (swiperEl) {
+                                new Swiper(swiperEl, {
+                                    slidesPerView: 1,
+                                    spaceBetween: 10,
+                                    navigation: {
+                                        nextEl: '.single-slide-next',
+                                        prevEl: '.single-slide-prev',
+                                    },
+                                });
+                            }
                         }
                         
                         // Set initial price on Add to Bag button
                         updateQuickViewPrice();
                     },
                     error: function() {
-                        $modal.find('.modal-dialog').html('<div class="modal-content"><div class="modal-body text-center p-5 text-danger"><p>Failed to load product details.</p><button type="button" class="btn btn-secondary mt-3" data-bs-dismiss="modal">Close</button></div></div>');
+                        $modalDialog.html('<div class="modal-content"><div class="modal-body text-center p-5 text-danger"><p>Failed to load product details.</p><button type="button" class="btn btn-secondary mt-3" data-bs-dismiss="modal">Close</button></div></div>');
                     }
                 });
+            });
+
+            // Cleanup for QuickView
+            $('#quickView').on('hidden.bs.modal', function () {
+                $(this).find('.modal-dialog').empty();
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open').css('overflow', '').css('padding-right', '');
             });
 
             // Quick View Quantity & Price Logic
@@ -1133,9 +1189,9 @@
                 var total = unitPrice * qty;
                 
                 // Detect currency symbol from the main price display in modal
-                var priceText = $modal.find('.price-new').first().text() || "₹0";
+                var priceText = $modal.find('.price-new').first().text() || "$0";
                 var symbol = priceText.match(/[^\d,.\s]/g); 
-                symbol = (symbol && symbol.length > 0) ? symbol[0] : '₹';
+                symbol = (symbol && symbol.length > 0) ? symbol[0] : '$';
 
                 var formatted = total.toLocaleString('en-IN', {
                     minimumFractionDigits: 2,
@@ -1160,6 +1216,45 @@
                         } else {
                             alert(response.message);
                         }
+                    }
+                });
+            });
+
+            // Newsletter Subscription AJAX
+            $('#newsletter-form').on('submit', function(e) {
+                e.preventDefault();
+                const $form = $(this);
+                const $btn = $form.find('button[type="submit"]');
+                const email = $form.find('input[name="email"]').val();
+
+                if (!email) return;
+
+                $btn.prop('disabled', true);
+
+                $.ajax({
+                    url: '/Newsletter/Subscribe',
+                    type: 'POST',
+                    data: {
+                        email: email,
+                        __RequestVerificationToken: $form.find('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(response) {
+                        $form.find('.feedback-message').remove();
+                        const statusClass = response.success ? 'success' : 'error';
+                        const feedbackHtml = `<div class="feedback-message ${statusClass}">${response.message}</div>`;
+                        $form.find('fieldset').after(feedbackHtml);
+
+                        if (response.success) {
+                            $form.find('input[name="email"]').val('');
+                            setTimeout(() => $form.find('.feedback-message').fadeOut(), 5000);
+                        }
+                    },
+                    error: function() {
+                        $form.find('.feedback-message').remove();
+                        $form.find('fieldset').after('<div class="feedback-message error">An error occurred. Please try again.</div>');
+                    },
+                    complete: function() {
+                        $btn.prop('disabled', false);
                     }
                 });
             });

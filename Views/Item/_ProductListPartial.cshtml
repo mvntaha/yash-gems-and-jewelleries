@@ -1,4 +1,4 @@
-@model Yash_Gems___Jewelleries.Models.ViewModels.ShopFilterViewModel
+@model Yash_Gems___Jewelleries.ViewModels.ItemFilterViewModel
 
 @foreach (var item in Model.Items)
 {
@@ -9,12 +9,14 @@
          data-brand="@item.BrandId">
         <div class="card_product-wrapper">
             <a asp-action="ProductDetail" asp-route-id="@item.StyleCode" class="product-img">
-                <img src="@(string.IsNullOrEmpty(item.PrimaryImageUrl) ? "/app/images/products/product-1.jpg" : item.PrimaryImageUrl)" 
-                     data-src="@(string.IsNullOrEmpty(item.PrimaryImageUrl) ? "/app/images/products/product-1.jpg" : item.PrimaryImageUrl)" 
+                <img src="@(string.IsNullOrEmpty(item.PrimaryImageUrl) ? "/uploads/default.png" : (item.PrimaryImageUrl.StartsWith("/") ? item.PrimaryImageUrl : "/" + item.PrimaryImageUrl))" 
+                     data-src="@(string.IsNullOrEmpty(item.PrimaryImageUrl) ? "/uploads/default.png" : (item.PrimaryImageUrl.StartsWith("/") ? item.PrimaryImageUrl : "/" + item.PrimaryImageUrl))" 
                      alt="@item.ItemName" class="lazyload img-product">
                 @if (!string.IsNullOrEmpty(item.SecondaryImageUrl))
                 {
-                    <img src="@item.SecondaryImageUrl" data-src="@item.SecondaryImageUrl" alt="@item.ItemName" class="lazyload img-hover">
+                    <img src="@(item.SecondaryImageUrl.StartsWith("/") ? item.SecondaryImageUrl : "/" + item.SecondaryImageUrl)" 
+                         data-src="@(item.SecondaryImageUrl.StartsWith("/") ? item.SecondaryImageUrl : "/" + item.SecondaryImageUrl)" 
+                         alt="@item.ItemName" class="lazyload img-hover">
                 }
             </a>
             <ul class="list-product-btn">
@@ -59,8 +61,8 @@
             @if (item.Quantity <= 0)
             {
                 <a href="#unavailable" data-bs-toggle="modal" class="variant-box stock bg-main link text-white">
-                    <p class="text-center d-none d-md-block">Notify Me When Available</p>
-                    <p class="text-center d-md-none">Notify Me</p>
+                    <p class="text-center d-none d-md-block">Currently Not Available</p>
+                    <p class="text-center d-md-none">Coming Soon</p>
                 </a>
             }
         </div>
@@ -79,22 +81,50 @@
     </div>
 }
 
-<!-- Pagination -->
 @if (Model.TotalPages > 1)
 {
     <div class="wd-full tempo">
-        <div class="wg-show-more">
-            <p>Showing @(((Model.Page - 1) * Model.PageSize) + 1) to @(Math.Min(Model.Page * Model.PageSize, Model.TotalItems)) of @Model.TotalItems products</p>
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-                    @for (int i = 1; i <= Model.TotalPages; i++)
-                    {
-                        <li class="page-item @(i == Model.Page ? "active" : "")">
-                            <a class="page-link pagination-link" href="javascript:void(0)" data-page="@i">@i</a>
-                        </li>
-                    }
-                </ul>
-            </nav>
+        <div class="wg-pagination">
+            @if (Model.Page > 1)
+            {
+                <a href="javascript:void(0)" class="tf-btn-line style-line-2 pagination-link" data-page="@(Model.Page - 1)">
+                    <span class="text-body">PREV</span>
+                </a>
+            }
+            else
+            {
+                <a class="tf-btn-line style-line-2 disabled" style="opacity: 0.5; cursor: not-allowed;">
+                    <span class="text-body">PREV</span>
+                </a>
+            }
+            <ul class="pagition-list">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li>
+                        @if (i == Model.Page)
+                        {
+                            <p class="pagination-item active">@i</p>
+                        }
+                        else
+                        {
+                            <a href="javascript:void(0)" class="pagination-item link pagination-link" data-page="@i">@i</a>
+                        }
+                    </li>
+                }
+            </ul>
+            @if (Model.Page < Model.TotalPages)
+            {
+                <a href="javascript:void(0)" class="tf-btn-line style-line-2 pagination-link" data-page="@(Model.Page + 1)">
+                    <span class="text-body">NEXT</span>
+                </a>
+            }
+            else
+            {
+                <a class="tf-btn-line style-line-2 disabled" style="opacity: 0.5; cursor: not-allowed;">
+                    <span class="text-body">NEXT</span>
+                </a>
+            }
+
         </div>
     </div>
 }
@@ -117,7 +147,7 @@ else
                     </div>
                     <p class="title text-lg-2">No products found</p>
                     <p class="sub-title">Try adjusting your filters to see more products!</p>
-                    <a href="javascript:void(0)" class="tf-btn fw-medium btn-clear-all-filters">
+                    <a asp-controller="Item" asp-action="Index" class="tf-btn fw-medium btn-clear-all-filters">
                         CLEAR FILTERS
                     </a>
                 </div>
@@ -125,3 +155,5 @@ else
         </div>
     </div>
 }
+
+

@@ -1,4 +1,5 @@
 @model Yash_Gems___Jewelleries.Models.Order
+@using Yash_Gems___Jewelleries.Models.Enums
 @{
     ViewData["Title"] = "Thank You";
 }
@@ -45,14 +46,14 @@
                             <h6 class="title">Confirmed</h6>
                             <p class="date text-caption">@Model.OrderDate.ToString("dd MMM yyyy")</p>
                         </div>
-                        <div class="delivery-step @(Model.OrderStatus == "Shipped" || Model.OrderStatus == "Delivered" ? "confirmed" : "")">
+                        <div class="delivery-step @(Model.OrderStatus == OrderStatus.Shipped || Model.OrderStatus == OrderStatus.Delivered ? "confirmed" : "")">
                             <div class="box-icon">
                                 <i class="icon-box"></i>
                             </div>
                             <h6 class="title">Shipped</h6>
-                            <p class="date text-caption">@(Model.OrderStatus == "Shipped" || Model.OrderStatus == "Delivered" ? Model.ModifiedDate?.ToString("dd MMM yyyy") : "N/A")</p>
+                            <p class="date text-caption">@(Model.OrderStatus == OrderStatus.Shipped || Model.OrderStatus == OrderStatus.Delivered ? Model.ModifiedDate?.ToString("dd MMM yyyy") : "N/A")</p>
                         </div>
-                        <div class="delivery-step @(Model.OrderStatus == "Delivered" ? "confirmed" : "")">
+                        <div class="delivery-step @(Model.OrderStatus == OrderStatus.Delivered ? "confirmed" : "")">
                             <div class="box-icon">
                                 <i class="icon-location-2"></i>
                             </div>
@@ -156,7 +157,7 @@
                             <li class="order-item">
                                 <div class="content">
                                     <div class="img-product">
-                                        <img src="@(string.IsNullOrEmpty(item.ProductImageUrl) ? "/app/images/products/product-default.jpg" : item.ProductImageUrl)" alt="@item.ProductName" class="prd">
+                                        <img src="@(string.IsNullOrEmpty(item.ProductImageUrl) ? "/uploads/default.png" : (item.ProductImageUrl.StartsWith("/") ? item.ProductImageUrl : "/" + item.ProductImageUrl))" alt="@item.ProductName" class="prd">
                                         <span class="text-caption quantity">@item.Quantity</span>
                                     </div>
                                     <div class="info">
@@ -192,7 +193,7 @@
                         <span>TOTAL:</span>
                         <span class="total-price-order">@Model.TotalAmount.ToString("C") USD</span>
                     </h4>
-                    <a asp-controller="Shop" asp-action="Index" class="tf-btn btn-fill fw-medium animate-btn w-100">
+                    <a asp-controller="Item" asp-action="Index" class="tf-btn btn-fill fw-medium animate-btn w-100">
                         Continue Shopping
                     </a>
                 </div>

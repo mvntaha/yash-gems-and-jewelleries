@@ -33,7 +33,7 @@
                         {
                             <li class="tf-mini-cart-item file-delete">
                                 <div class="tf-mini-cart-image">
-                                    <img src="@(!string.IsNullOrEmpty(item.ProductImage) ? item.ProductImage : "/app/images/products/product-default.jpg")" alt="@item.ProductName">
+                                    <img src="@(string.IsNullOrEmpty(item.ProductImage) ? "/uploads/default.png" : (item.ProductImage.StartsWith("/") ? item.ProductImage : "/" + item.ProductImage))" alt="@item.ProductName">
                                 </div>
                                 <div class="tf-mini-cart-info">
                                     <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@item.StyleCode" class="prd-name link">@item.ProductName</a>

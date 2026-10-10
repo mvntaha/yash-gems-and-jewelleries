@@ -1,4 +1,4 @@
-﻿@model IEnumerable<Yash_Gems___Jewelleries.Models.Order>
+﻿@model Yash_Gems___Jewelleries.ViewModels.CustomerOrderIndexViewModel
 @{
 	ViewData["Title"] = "My Orders";
 }
@@ -39,7 +39,7 @@
                             </a>
                         </li>
                         <li>
-                            <a asp-action="Wishlist" asp-controller="Account" class="link-account">
+                            <a asp-action="Index" asp-controller="Wishlist" class="link-account">
                                 <span class="text">My Wishlist</span>
                             </a>
                         </li>
@@ -65,59 +65,58 @@
                     </ul>
                 </div>
             </div>
-            <div class="col-lg-8">
-                <div class="my-acount-content account-order">
-                    <h4 class="heading fw-normal">
-                        Order History
-                    </h4>
-                    @if(Model != null && Model.Any())
-                    {
+                @if(Model.Orders != null && Model.Orders.Any())
+                {
+                <div class="col-lg-8">
+                    <div class="my-acount-content account-order">
+                        <h4 class="heading fw-normal">Order History</h4>
                         <div class="table-order-history">
                             <table>
                                 <thead>
                                     <tr>
                                         <th class="title-case order_code">ORDER ID</th>
-                                    <th class="title-case order_date">ORDER DATE</th>
-                                    <th class="title-case order_status">STATUS</th>
-                                    <th class="title-case order_total">TOTAL</th>
-                                    <th class="title-case order_action">ACTION</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach(var item in Model)
-                                {
-                                    <tr>
-                                        <td>#@item.OrderNumber</td>
-                                        <td>@item.OrderDate.ToString("MMM dd, yyyy")</td>
-                                        <td>@item.OrderStatus</td>
-                                        <td>@item.TotalAmount.ToString("C")</td>
-                                        <td>
-                                        <a href="#orderDetail" data-bs-toggle="modal" data-order-id="@item.OrderId" class="btn-action link">
-                                            <i class="icon icon-view-2"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                    }
-                    else
-                    {
-                    <div class="col-lg-8 d-flex justify-content-center">
-                        <div class="my-acount-content account-order empty">
-                            <div class="ic-img">
-                                <img src="/app/images/section/empty-cart.svg" alt="Emty Cart">
-                            </div>
-                            <p class="title text-lg-2">You haven’t placed any order yet</p>
-                            <p class="sub-title">It’s time to make your first order</p>
-                            <a asp-action="Index" asp-controller="Shop" class="tf-btn fw-medium btn-out-line">
-                                SHOPPING
-                            </a>
+                                        <th class="title-case order_date">ORDER DATE</th>
+                                        <th class="title-case order_status">STATUS</th>
+                                        <th class="title-case order_total">TOTAL</th>
+                                        <th class="title-case order_action">ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach(var item in Model.Orders)
+                                    {
+                                        <tr>
+                                            <td>#@item.OrderNumber</td>
+                                            <td>@item.OrderDate.ToString("MMM dd, yyyy")</td>
+                                            <td>@item.OrderStatus</td>
+                                            <td>@item.TotalAmount.ToString("C")</td>
+                                            <td>
+                                                <a href="javascript:void(0)" data-order-id="@item.OrderId" class="btn-action link btn-view-order">
+                                                    <i class="icon icon-view-2"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    }
                 </div>
+                }
+                else
+                {
+                <div class="col-lg-8 d-flex justify-content-center">
+                    <div class="my-acount-content account-order empty">
+                        <div class="ic-img">
+                            <img src="/app/images/section/empty-cart.svg" alt="Emty Cart">
+                        </div>
+                        <p class="title text-lg-2">You haven’t placed any order yet</p>
+                        <p class="sub-title">It’s time to make your first order</p>
+                        <a asp-action="Index" asp-controller="Item" class="tf-btn fw-medium btn-out-line">
+                            SHOPPING
+                        </a>
+                    </div>
+                </div>
+                }
             </div>
         </div>
     </div>
@@ -132,15 +131,16 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            $('.btn-action.link').on('click', function (e) {
+            $('.btn-view-order').on('click', function (e) {
                 e.preventDefault();
                 var orderId = $(this).data('order-id');
+                var modalEl = document.getElementById('orderDetail');
 
-                // Show loading state or clear previous content
-                $('#orderDetail').html('<div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div></div></div>');
+                // Clear previous content and show loading state
+                modalEl.innerHTML = '<div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-body text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div></div></div>';
                 
-                // Show modal
-                var myModal = new bootstrap.Modal(document.getElementById('orderDetail'));
+                // Show modal using Bootstrap 5 API with raw DOM element
+                var myModal = bootstrap.Modal.getOrCreateInstance(modalEl);
                 myModal.show();
 
                 $.ajax({
@@ -148,13 +148,20 @@
                     type: 'GET',
                     data: { id: orderId },
                     success: function (result) {
-                        $('#orderDetail').html(result);
+                        modalEl.innerHTML = result;
                     },
                     error: function (xhr, status, error) {
                         console.error(error);
-                        $('#orderDetail').html('<div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-body text-center py-5"><h5 class="text-danger">Failed to load order details.</h5></div></div></div></div>');
+                        modalEl.innerHTML = '<div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-body text-center py-5"><h5 class="text-danger">Failed to load order details.</h5><button type="button" class="btn btn-secondary mt-3" data-bs-dismiss="modal">Close</button></div></div></div>';
                     }
                 });
+            });
+
+            // Cleanup logic to ensure backdrop is removed and UI is unfrozen
+            $('#orderDetail').on('hidden.bs.modal', function () {
+                $(this).empty();
+                $('.modal-backdrop').remove();
+                $('body').removeClass('modal-open').css('overflow', '').css('padding-right', '');
             });
         });
     </script>

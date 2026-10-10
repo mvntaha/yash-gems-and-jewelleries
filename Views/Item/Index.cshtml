@@ -1,4 +1,4 @@
-﻿@model Yash_Gems___Jewelleries.Models.ViewModels.ShopFilterViewModel
+﻿@model Yash_Gems___Jewelleries.ViewModels.ItemFilterViewModel
 @{
     ViewData["Title"] = "Shop";
 }
@@ -42,7 +42,7 @@
                     <div class="swiper-slide">
                         <div class="box_collection--V01 style_2 hover-img">
                             <a asp-action="Index" asp-route-categoryIds="@cat.Id" class="image img-style">
-                                <img src="@cat.ImageUrl" 
+                                <img src="@(string.IsNullOrEmpty(cat.ImageUrl) ? "/uploads/default.png" : (cat.ImageUrl.StartsWith("/") ? cat.ImageUrl : "/" + cat.ImageUrl))" 
                                      alt="@cat.Label" class="lazyload">
                             </a>
                             <a asp-action="Index" asp-route-categoryIds="@cat.Id" class="name-cls link">
@@ -111,7 +111,7 @@
 <!-- /Product -->
 
 <!-- Filter Sidebar -->
-<div class="offcanvas offcanvas-start canvas-sidebar canvas-filter" id="filterShop">
+<div class="offcanvas offcanvas-start canvas-sidebar canvas-filter" id="filterShop" aria-modal="true" role="dialog">
     <div class="canvas-wrapper">
         <div class="canvas-header">
             <span class="title">FILTER</span>
@@ -119,9 +119,9 @@
         </div>
         <div class="canvas-body">
             <form id="filterForm">
-                <input type="hidden" name="sortBy" id="sortByInput" value="@Model.SortBy" />
-                <input type="hidden" name="searchQuery" value="@Model.SearchQuery" />
-                <input type="hidden" name="page" id="pageInput" value="@Model.Page" />
+                <input type="hidden" name="sortBy" id="sortByInput" value="@Model.SortBy">
+                <input type="hidden" name="searchQuery" value="@Model.SearchQuery">
+                <input type="hidden" name="page" id="pageInput" value="@Model.CurrentPage">
 
                 <div class="apply-filter-wrap">
                     <p class="title h6 fw-normal text-uppercase">Applied Filters</p>
@@ -130,7 +130,6 @@
                     </div>
                 </div>
 
-                <!-- Availability -->
                 <div class="widget-facet">
                     <div class="facet-title h6 fw-normal" data-bs-target="#availability" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="availability">
                         <span class="h6 fw-normal text-uppercase">availability</span>
@@ -141,7 +140,7 @@
                             <li class="list-item">
                                 <input type="radio" name="availability" value="" class="tf-check style-2" id="allStock" @(string.IsNullOrEmpty(Model.Availability) ? "checked" : "")>
                                 <label for="allStock" class="label">
-                                    <span>All</span><span class="count-wrap">[ <span class="count">@Model.TotalItems</span> ]</span>
+                                    <span>All</span><span class="count-wrap">[ <span class="count">@Model.TotalCount</span> ]</span>
                                 </label>
                             </li>
                             <li class="list-item">
@@ -150,101 +149,89 @@
                                     <span>In Stock</span><span class="count-wrap">[ <span class="count">@Model.InStockCount</span> ]</span>
                                 </label>
                             </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="widget-facet">
+                    <div class="facet-title h6 fw-normal" data-bs-target="#product-types" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="product-types">
+                        <span class="h6 fw-normal text-uppercase">Product Type</span>
+                        <span class="icon ic-accordion-custom"></span>
+                    </div>
+                    <div id="product-types" class="collapse show">
+                        <ul class="collapse-body filter-group-check current-scrollbar">
+                            @foreach (var pt in Model.ProductTypes)
+                            {
+                                <li class="list-item">
+                                    <input type="checkbox" name="productTypeIds" value="@pt.Id" class="tf-check style-2" id="pt-@pt.Id" @(Model.SelectedProductTypeIds.Contains(pt.Id) ? "checked" : "")>
+                                    <label for="pt-@pt.Id" class="label">
+                                        <span>@pt.Name</span><span class="count-wrap">[ <span class="count">@pt.ProductCount</span> ]</span>
+                                    </label>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="widget-facet">
+                    <div class="facet-title h6 fw-normal" data-bs-target="#diamond-clarity" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="diamond-clarity">
+                        <span class="h6 fw-normal text-uppercase">Diamond Clarity</span>
+                        <span class="icon ic-accordion-custom"></span>
+                    </div>
+                    <div id="diamond-clarity" class="collapse show">
+                        <ul class="collapse-body filter-group-check current-scrollbar">
+                            @foreach (var clarity in Model.AvailableDiamondClarities)
+                            {
+                                <li class="list-item">
+                                    <input type="checkbox" name="diamondClarities" value="@clarity" class="tf-check style-2" id="clarity-@clarity" @(Model.SelectedDiamondClarities.Contains(clarity) ? "checked" : "")>
+                                    <label for="clarity-@clarity" class="label">
+                                        <span>@clarity</span><span class="count-wrap">[ <span class="count">0</span> ]</span>
+                                    </label>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="widget-facet">
+                    <div class="facet-title h6 fw-normal" data-bs-target="#diamond-color" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="diamond-color">
+                        <span class="h6 fw-normal text-uppercase">Diamond Color</span>
+                        <span class="icon ic-accordion-custom"></span>
+                    </div>
+                    <div id="diamond-color" class="collapse show">
+                        <ul class="collapse-body filter-group-check current-scrollbar">
+                            @foreach (var dColor in Model.AvailableDiamondColors)
+                            {
+                                <li class="list-item">
+                                    <input type="checkbox" name="diamondColors" value="@dColor" class="tf-check style-2" id="dcolor-@dColor" @(Model.SelectedDiamondColors.Contains(dColor) ? "checked" : "")>
+                                    <label for="dcolor-@dColor" class="label">
+                                        <span>@dColor</span><span class="count-wrap">[ <span class="count">0</span> ]</span>
+                                    </label>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="widget-facet">
+                    <div class="facet-title h6 fw-normal" data-bs-target="#carat-weight" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="carat-weight">
+                        <span class="h6 fw-normal text-uppercase">Carat Weight</span>
+                        <span class="icon ic-accordion-custom"></span>
+                    </div>
+                    <div id="carat-weight" class="collapse show">
+                        <ul class="collapse-body filter-group-check current-scrollbar">
                             <li class="list-item">
-                                <input type="radio" name="availability" value="outStock" class="tf-check style-2" id="outStock" @(Model.Availability == "outStock" ? "checked" : "")>
-                                <label for="outStock" class="label">
-                                    <span>Out of Stock</span><span class="count-wrap">[ <span class="count">@Model.OutOfStockCount</span> ]</span>
-                                </label>
+                                <input type="radio" name="caratRange" value="" class="tf-check style-2" id="all-carat" @(string.IsNullOrEmpty(Model.CaratRange) ? "checked" : "")>
+                                <label for="all-carat" class="label"><span>All Weights</span></label>
+                            </li>
+                            <li class="list-item">
+                                <input type="radio" name="caratRange" value="0-0.29" class="tf-check style-2" id="carat-0-29" @(Model.CaratRange == "0-0.29" ? "checked" : "")>
+                                <label for="carat-0-29" class="label"><span>Under 0.30</span></label>
                             </li>
                         </ul>
                     </div>
                 </div>
 
-                <!-- Category -->
-                <div class="widget-facet">
-                    <div class="facet-title h6 fw-normal" data-bs-target="#categories" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="categories">
-                        <span class="h6 fw-normal text-uppercase">category</span>
-                        <span class="icon ic-accordion-custom"></span>
-                    </div>
-                    <div id="categories" class="collapse show">
-                        <ul class="collapse-body filter-group-check current-scrollbar">
-                            @foreach (var cat in Model.Categories)
-                            {
-                                <li class="list-item">
-                                    <input type="checkbox" name="categoryIds" value="@cat.Id" class="tf-check style-2" id="cat-@cat.Id" @(cat.IsSelected ? "checked" : "")>
-                                    <label for="cat-@cat.Id" class="label">
-                                        <span>@cat.Label</span><span class="count-wrap">[ <span class="count">@cat.Count</span> ]</span>
-                                    </label>
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Brands -->
-                <div class="widget-facet">
-                    <div class="facet-title h6 fw-normal" data-bs-target="#brands" role="button" data-bs-toggle="collapse" aria-expanded="false" aria-controls="brands">
-                        <span class="h6 fw-normal text-uppercase">Brands</span>
-                        <span class="icon ic-accordion-custom"></span>
-                    </div>
-                    <div id="brands" class="collapse">
-                        <ul class="collapse-body filter-group-check current-scrollbar">
-                            @foreach (var brand in Model.Brands)
-                            {
-                                <li class="list-item">
-                                    <input type="checkbox" name="brandIds" value="@brand.Id" class="tf-check style-2" id="brand-@brand.Id" @(brand.IsSelected ? "checked" : "")>
-                                    <label for="brand-@brand.Id" class="label">
-                                        <span>@brand.Label</span><span class="count-wrap">[ <span class="count">@brand.Count</span> ]</span>
-                                    </label>
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Material (Gold Karat) -->
-                <div class="widget-facet">
-                    <div class="facet-title h6 fw-normal" data-bs-target="#materials" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="materials">
-                        <span class="h6 fw-normal text-uppercase">Material</span>
-                        <span class="icon ic-accordion-custom"></span>
-                    </div>
-                    <div id="materials" class="collapse show">
-                        <ul class="collapse-body filter-group-check current-scrollbar">
-                            @foreach (var material in Model.Materials)
-                            {
-                                <li class="list-item">
-                                    <input type="checkbox" name="goldTypeIds" value="@material.Id" class="tf-check style-2" id="mat-@material.Id" @(material.IsSelected ? "checked" : "")>
-                                    <label for="mat-@material.Id" class="label">
-                                        <span>@material.Label</span><span class="count-wrap">[ <span class="count">@material.Count</span> ]</span>
-                                    </label>
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Stone Color -->
-                <div class="widget-facet">
-                    <div class="facet-title h6 fw-normal" data-bs-target="#stone-color" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="stone-color">
-                        <span class="h6 fw-normal text-uppercase">stone colour</span>
-                        <span class="icon ic-accordion-custom"></span>
-                    </div>
-                    <div id="stone-color" class="collapse show">
-                        <ul class="collapse-body filter-group-check current-scrollbar">
-                            @foreach (var color in Model.StoneColorsList)
-                            {
-                                <li class="list-item">
-                                    <input type="checkbox" name="stoneColors" value="@color.Value" class="tf-check style-2" id="color-@color.Value" @(color.IsSelected ? "checked" : "")>
-                                    <label for="color-@color.Value" class="label">
-                                        <span>@color.Label</span><span class="count-wrap">[ <span class="count">@color.Count</span> ]</span>
-                                    </label>
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Price -->
                 <div class="widget-facet">
                     <div class="facet-title h6 fw-normal" data-bs-target="#price" role="button" data-bs-toggle="collapse" aria-expanded="true" aria-controls="price">
                         <span class="h6 fw-normal text-uppercase">price</span>
@@ -252,51 +239,29 @@
                     </div>
                     <div id="price" class="collapse show">
                         <ul class="collapse-body filter-group-check current-scrollbar">
-                             <li class="list-item">
-                                <input type="radio" name="priceRange" value="" class="tf-check style-2 price-radio" id="all-price" @(!Model.MinPrice.HasValue && !Model.MaxPrice.HasValue ? "checked" : "")>
-                                <label for="all-price" class="label">
-                                    <span>All Prices</span>
-                                </label>
+                            <li class="list-item">
+                                <input type="radio" name="priceRange" value="" class="tf-check style-2 price-radio" id="all-price" @(string.IsNullOrEmpty(Model.PriceRange) ? "checked" : "")>
+                                <label for="all-price" class="label"><span>All Prices</span></label>
                             </li>
                             <li class="list-item">
-                                <input type="radio" name="priceRange" value="0-500" class="tf-check style-2 price-radio" id="u-500" @(Model.MaxPrice == 500 ? "checked" : "")>
-                                <label for="u-500" class="label">
-                                    <span>Under $500</span>
-                                </label>
-                            </li>
-                            <li class="list-item">
-                                <input type="radio" name="priceRange" value="0-1000" class="tf-check style-2 price-radio" id="u-1000" @(Model.MaxPrice == 1000 ? "checked" : "")>
-                                <label for="u-1000" class="label">
-                                    <span>Under $1000</span>
-                                </label>
-                            </li>
-                            <li class="list-item">
-                                <input type="radio" name="priceRange" value="0-2000" class="tf-check style-2 price-radio" id="u-2000" @(Model.MaxPrice == 2000 ? "checked" : "")>
-                                <label for="u-2000" class="label">
-                                    <span>Under $2000</span>
-                                </label>
-                            </li>
-                            <li class="list-item">
-                                <input type="radio" name="priceRange" value="2000-999999" class="tf-check style-2 price-radio" id="up-2000" @(Model.MinPrice == 2000 ? "checked" : "")>
-                                <label for="up-2000" class="label">
-                                    <span>Over $2000</span>
-                                </label>
+                                <input type="radio" name="priceRange" value="0-500" class="tf-check style-2 price-radio" id="u-500" @(Model.PriceRange == "0-500" ? "checked" : "")>
+                                <label for="u-500" class="label"><span>Under $500</span></label>
                             </li>
                         </ul>
-                        <input type="hidden" name="minPrice" id="minPriceInput" value="@Model.MinPrice" />
-                        <input type="hidden" name="maxPrice" id="maxPriceInput" value="@Model.MaxPrice" />
+                        <input type="hidden" name="minPrice" id="minPriceInput" value="@Model.MinPrice">
+                        <input type="hidden" name="maxPrice" id="maxPriceInput" value="@Model.MaxPrice">
                     </div>
                 </div>
 
-                <div class="canvas-bottom">
-                    <button type="button" class="tf-btn btn-reset btn-clear-all-filters">
-                        <span class=" fw-medium">CLEAR ALL</span>
-                    </button>
-                    <button type="submit" class="tf-btn btn-fill animate-btn" data-bs-dismiss="offcanvas">
-                        <span class=" fw-medium">APPLY</span>
-                    </button>
-                </div>
             </form>
+        </div>
+        <div class="canvas-bottom">
+            <button type="button" class="tf-btn btn-reset btn-clear-all-filters">
+                <span class="fw-medium">CLEAR ALL</span>
+            </button>
+            <button type="submit" form="filterForm" class="tf-btn btn-fill animate-btn" data-bs-dismiss="offcanvas">
+                <span class="fw-medium">APPLY</span>
+            </button>
         </div>
     </div>
 </div>
@@ -366,3 +331,4 @@
 @section Scripts {
     <script src="/app/js/shop-filter.js"></script>
 }
+

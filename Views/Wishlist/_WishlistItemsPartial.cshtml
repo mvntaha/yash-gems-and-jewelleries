@@ -28,17 +28,25 @@
         <div class="card_product-wrapper">
             <span class="remove icon-close" data-wishlistid="@wishItem.WishlistId" title="Remove from wishlist"></span>
             <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@wishItem.StyleCode" class="product-img">
-                <img src="@(string.IsNullOrEmpty(wishItem.Item.PrimaryImageUrl) ? " /app/images/products/product-1.jpg" : wishItem.Item.PrimaryImageUrl)" data-src="@(string.IsNullOrEmpty(wishItem.Item.PrimaryImageUrl) ? " /app/images/products/product-1.jpg" : wishItem.Item.PrimaryImageUrl)" alt="@wishItem.Item.ItemName" class="lazyload img-product">
-
-                <img src="@(string.IsNullOrEmpty(wishItem.Item.SecondaryImageUrl) ? (string.IsNullOrEmpty(wishItem.Item.PrimaryImageUrl) ? " /app/images/products/product-1.jpg" : wishItem.Item.PrimaryImageUrl) : wishItem.Item.SecondaryImageUrl)" data-src="@(string.IsNullOrEmpty(wishItem.Item.SecondaryImageUrl) ? (string.IsNullOrEmpty(wishItem.Item.PrimaryImageUrl) ? " /app/images/products/product-1.jpg" : wishItem.Item.PrimaryImageUrl) : wishItem.Item.SecondaryImageUrl)" alt="@wishItem.Item.ItemName" class="lazyload img-hover">
+                @{
+                    var primaryImg = wishItem.Item.PrimaryImageUrl;
+                    var primaryImgUrl = string.IsNullOrEmpty(primaryImg) ? "/uploads/default.png" : (primaryImg.StartsWith("/") ? primaryImg : "/" + primaryImg);
+                    var secondaryImg = wishItem.Item.SecondaryImageUrl;
+                    var secondaryImgUrl = string.IsNullOrEmpty(secondaryImg) ? primaryImgUrl : (secondaryImg.StartsWith("/") ? secondaryImg : "/" + secondaryImg);
+                }
+                <img src="@primaryImgUrl" data-src="@primaryImgUrl" alt="@wishItem.Item.ItemName" class="lazyload img-product">
+                <img src="@secondaryImgUrl" data-src="@secondaryImgUrl" alt="@wishItem.Item.ItemName" class="lazyload img-hover">
             </a>
             <ul class="list-product-btn d-none d-md-flex">
+            @if(wishItem.Item.Quantity > 0)
+            {
                 <li>
                     <a href="#quickAdd" data-bs-toggle="modal" class="hover-tooltip tooltip-left box-icon btn-add-to-cart" data-stylecode="@wishItem.StyleCode">
                         <span class="icon icon-shop-cart"></span>
                         <span class="tooltip">Quick Add</span>
                     </a>
                 </li>
+            }
                 <li>
                     <a href="#quickView" data-bs-toggle="modal" class="hover-tooltip tooltip-left box-icon quickview" data-stylecode="@wishItem.StyleCode">
                         <span class="icon icon-view"></span>

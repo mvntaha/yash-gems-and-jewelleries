@@ -40,7 +40,7 @@
                             </a>
                         </li>
                         <li>
-                            <a asp-action="Wishlist" asp-controller="Account" class="link-account">
+                            <a asp-action="Index" asp-controller="Wishlist" class="link-account">
                                 <span class="text">My Wishlist</span>
                             </a>
                         </li>
@@ -66,49 +66,49 @@
                     </ul>
                 </div>
             </div>
-            <div class="col-lg-8">
-
-
-
-                    @if (!Model.Any())
-                    {
-                    <div class="col-lg-8 d-flex justify-content-center">
-                        <div class="my-acount-content account-order empty">
-                            <div class="ic-img">
-                                <img src="/app/images/section/empty-cart.svg" alt="Emty Cart">
-                            </div>
-                            <p class="title text-lg-2">You have no inquiries yet</p>
-                            <p class="sub-title">Got any questions? Contact us now!</p>
-                            <a asp-action="ContactUs" asp-controller="Home" class="tf-btn fw-medium btn-out-line">
-                                CONTACT US
-                            </a>
-                        </div>
+            @if (!Model.Any())
+            {
+            <div class="col-lg-8 d-flex justify-content-center">
+                <div class="my-acount-content account-order empty">
+                    <div class="ic-img">
+                        <img src="/app/images/section/empty-cart.svg" alt="Emty Cart">
                     </div>
-                    }
-                    else
-                    {
-                    <div class="my-acount-content account-order">
-                        <h4 class="heading fw-normal">My Inquiries</h4>
-                        <div class="widget-accordion-2 style-2">
-                            @{ int index = 0; }
-                            @foreach (var inquiry in Model)
-                            {
-                                index++;
-                                var collapseId = $"inquiry-{inquiry.InquiryId}";
+                    <p class="title text-lg-2">You have no inquiries yet</p>
+                    <p class="sub-title">Got any questions? Contact us now!</p>
+                    <a asp-action="ContactUs" asp-controller="Home" class="tf-btn fw-medium btn-out-line">
+                        CONTACT US
+                    </a>
+                </div>
+            </div>
+            }
+            else
+            {
+            <div class="col-lg-8">
+                <div class="my-acount-content account-order">
+                    <h4 class="heading fw-normal">My Inquiries</h4>
+                    <div class="widget-accordion-2 style-2">
+                        @{ int index = 0; }
+                        @foreach (var inquiry in Model)
+                        {
+                            index++;
+                            var collapseId = $"inquiry-{inquiry.InquiryId}";
 
-                                <div class="accordion-title collapsed"
-                                     data-bs-target="#@collapseId"
-                                     role="button"
-                                     data-bs-toggle="collapse"
-                                     aria-expanded="false"
-                                     aria-controls="@collapseId">
+                            <div class="border-bottom">
+                                
+                                <div class="accordion-title collapsed d-flex justify-content-between align-items-center"
+                                    data-bs-target="#@collapseId"
+                                    role="button"
+                                    data-bs-toggle="collapse"
+                                    aria-expanded="false"
+                                    aria-controls="@collapseId">
+                                    
                                     <span class="fw-medium">
                                         @index. @inquiry.Message
                                     </span>
                                     <span class="icon ic-accordion-custom"></span>
                                 </div>
 
-                                <div id="@collapseId" class="collapse" data-bs-parent=".widget-accordion-2">
+                                <div id="@collapseId" class="collapse" data-bs-parent="#inquiryAccordion">
                                     <div class="accordion-body">
                                         @if (!string.IsNullOrEmpty(inquiry.AdminResponse))
                                         {
@@ -116,16 +116,18 @@
                                         }
                                         else
                                         {
-                                            <p class="text-muted italic">No response yet. We will get back to you as soon as possible!</p>
+                                            <p class="text-muted fst-italic">No response yet. We will get back to you as soon as possible!</p>
                                         }
                                     </div>
                                 </div>
-                            }
-                        </div>
+                                
+                            </div>
+                        }
                     </div>
-                    }
                 </div>
             </div>
+            }
         </div>
     </div>
+</div>
 <!-- /Account -->

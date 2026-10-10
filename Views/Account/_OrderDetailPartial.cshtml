@@ -1,4 +1,5 @@
 @model Yash_Gems___Jewelleries.Models.Order
+@using Yash_Gems___Jewelleries.Models.Enums
 
 <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -17,15 +18,15 @@
                 <li class="order_item">@Model.OrderItems.Sum(i => i.Quantity) ITEMS</li>
                 <li class="br-line"></li>
                 @{
-                    var statusClass = Model.OrderStatus.ToLower() switch
+                    var statusClass = Model.OrderStatus switch
                     {
-                        "delivered" => "delivered",
-                        "cancelled" => "cancelled",
-                        "pending" => "",
+                        OrderStatus.Delivered => "delivered",
+                        OrderStatus.Cancelled => "cancelled",
+                        OrderStatus.Pending => "",
                         _ => ""
                     };
                 }
-                <li class="order_status @statusClass">@Model.OrderStatus.ToUpper()</li>
+                <li class="order_status @statusClass">@Model.OrderStatus.ToString().ToUpper()</li>
             </ul>
             <div class="table-order-detail account">
                 <table>
@@ -42,11 +43,11 @@
                         {
                             <tr>
                                 <td class="order_product">
-                                    <a asp-controller="Shop" asp-action="ProductDetail" asp-route-id="@item.StyleCode" class="image">
-                                        <img src="@(string.IsNullOrEmpty(item.ProductImageUrl) ? "/app/images/products/product-1.jpg" : item.ProductImageUrl)" alt="@item.ProductName">
+                                    <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@item.StyleCode" class="image">
+                                        <img src="@(string.IsNullOrEmpty(item.ProductImageUrl) ? "/uploads/default.png" : (item.ProductImageUrl.StartsWith("/") ? item.ProductImageUrl : "/" + item.ProductImageUrl))" alt="@item.ProductName">
                                     </a>
                                     <div class="infor">
-                                        <a asp-controller="Shop" asp-action="ProductDetail" asp-route-id="@item.StyleCode" class="prd-name h6 fw-normal link">
+                                        <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@item.StyleCode" class="prd-name h6 fw-normal link">
                                             @item.ProductName
                                         </a>
                                         <p class="prd-type">@item.GoldCarat / @item.GoldWeight g</p>

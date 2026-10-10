@@ -106,13 +106,14 @@
                             <div class="card_product--V01">
                                 <div class="card_product-wrapper">
                                     <a asp-controller="Item" asp-action="ProductDetail" asp-route-id="@item.StyleCode" class="product-img">
-                                        <img src="@(string.IsNullOrEmpty(item.PrimaryImageUrl) ? "/app/images/products/product-1.jpg" : item.PrimaryImageUrl)" 
-                                             data-src="@(string.IsNullOrEmpty(item.PrimaryImageUrl) ? "/app/images/products/product-1.jpg" : item.PrimaryImageUrl)" 
-                                             alt="@item.ItemName" class="lazyload img-product">
-                                        @if (!string.IsNullOrEmpty(item.SecondaryImageUrl))
-                                        {
-                                            <img src="@item.SecondaryImageUrl" data-src="@item.SecondaryImageUrl" alt="@item.ItemName" class="lazyload img-hover">
+                                        @{
+                                            var primary = item.PrimaryImageUrl;
+                                            var primaryUrl = string.IsNullOrEmpty(primary) ? "/app/images/products/product-1.jpg" : (primary.StartsWith("/") ? primary : "/" + primary);
+                                            var secondary = item.SecondaryImageUrl;
+                                            var secondaryUrl = string.IsNullOrEmpty(secondary) ? primaryUrl : (secondary.StartsWith("/") ? secondary : "/" + secondary);
                                         }
+                                        <img src="@primaryUrl" data-src="@primaryUrl" alt="@item.ItemName" class="lazyload img-product">
+                                        <img src="@secondaryUrl" data-src="@secondaryUrl" alt="@item.ItemName" class="lazyload img-hover">
                                     </a>
                                     <ul class="list-product-btn">
                                         <li class="wishlist">

@@ -1,5 +1,27 @@
-﻿@{
+﻿@using Yash_Gems___Jewelleries.ViewModels
+@model HomeViewModel
+@{
     ViewData["Title"] = "Home";
+
+    string formattedTitle = "";
+
+    if (Model.SecondBanner != null)
+    {
+        var title = Model.SecondBanner.Title;
+        var firstSpaceIndex = title.Trim().IndexOf(" ");
+
+        if (firstSpaceIndex > 0)
+        {
+            // Wrap first word in span, keep the rest, then replace pipe with <br>
+            formattedTitle = $"<span class='fst-italic'>{title.Substring(0, firstSpaceIndex)}</span>{title.Substring(firstSpaceIndex)}";
+            formattedTitle = formattedTitle.Replace("|", "<br>");
+        }
+        else
+        {
+            // If there is only one word, just italicize the whole thing
+            formattedTitle = $"<span class='fst-italic'>{title}</span>".Replace("|", "<br>");
+        }
+    }
 }
 
 <!-- Hero Banner -->
@@ -7,19 +29,19 @@
     <div class="container">
         <div class="hero-main">
             <div class="img_item item-1 hover-repel">
-                <img src="app/images/section/img-item-1.jpg" data-src="app/images/section/img-item-1.jpg" alt="Treding"
+                <img src="/app/images/section/img-item-1.jpg" data-src="/app/images/section/img-item-1.jpg" alt="Treding"
                      class="lazyload wow fadeInLeft">
             </div>
             <div class="img_item item-2 hover-repel d-none d-lg-block">
-                <img src="app/images/section/img-item-2.jpg" data-src="app/images/section/img-item-2.jpg" alt="Treding"
+                <img src="/app/images/section/img-item-2.jpg" data-src="/app/images/section/img-item-2.jpg" alt="Treding"
                      class="lazyload wow fadeInLeftBottom">
             </div>
             <div class="img_item item-3 hover-repel d-none d-lg-block">
-                <img src="app/images/section/img-item-3.jpg" data-src="app/images/section/img-item-3.jpg" alt="Treding"
+                <img src="/app/images/section/img-item-3.jpg" data-src="/app/images/section/img-item-3.jpg" alt="Treding"
                      class="lazyload wow fadeInRightBottom">
             </div>
             <div class="img_item item-4 hover-repel">
-                <img src="app/images/section/img-item-4.jpg" data-src="app/images/section/img-item-4.jpg" alt="Treding"
+                <img src="/app/images/section/img-item-4.jpg" data-src="/app/images/section/img-item-4.jpg" alt="Treding"
                      class="lazyload wow fadeInRight">
             </div>
             <div class="hero-content">
@@ -33,11 +55,11 @@
                     Each piece is designed to empower your individuality—make your statement today!
                 </p>
                 <div class="btn-group">
-                    <a href="shop-default.html" class="tf-btn text-uppercase type-large">
+                    <a href="/Item" class="tf-btn text-uppercase type-large">
                         Shop Now
                         <i class="icon-arrow-right-3 fs-24"></i>
                     </a>
-                    <a href="shop-collection-list.html" class="link text-uppercase">
+                    <a href="/Item" class="link text-uppercase">
                         explore more
                     </a>
                 </div>
@@ -56,7 +78,7 @@
                 craftsmanship with modern design, creating pieces that empower <br class="d-none d-xl-block">
                 you to express your unique elegance every day.
             </h3>
-            <a href="contact-us.html" class="tf-btn style-4">
+            <a href="/Home/AboutUs" class="tf-btn style-4">
                 our story
                 <i class="icon-arrow-right-2 fs-24"></i>
             </a>
@@ -65,874 +87,313 @@
 </section>
 <!-- /Banner Text -->
 <!-- Slider Product -->
-<section class="flat-spacing-3 bg-main-2 overflow-hidden">
-    <div class="container-layout-right-4">
-        <div class="slide_wrap">
-            <div class="title-left">
-                <h2 class="title text-white font-2 fw-normal text-xl-end">
-                    <span class="fst-italic">Fresh Finds</span>, Just In
-                </h2>
-            </div>
-            <div class="wrap">
-                <div class="swiper tf-swiper" data-preview="3.39" data-tablet="2.5" data-mobile-sm="2.2" data-mobile="1.4" data-space="10"
-                     data-pagination="1" data-pagination-sm="1" data-pagination-md="2" data-pagination-lg="3">
-                    <div class="swiper-wrapper">
-                        <!-- item 1 -->
-                        <div class="swiper-slide">
-                            <div class="card_product--V01 type-space-30">
-                                <div class="card_product-wrapper aspect-ratio-1">
-                                    <a href="product-default.html" class="product-img">
-                                        <img src="app/images/products/product-6.jpg" data-src="app/images/products/product-6.jpg" alt="Image Product"
-                                             class="lazyload img-product">
-                                        <img src="app/images/products/product-20.jpg" data-src="app/images/products/product-20.jpg"
-                                             alt="Image Product" class="lazyload img-hover">
-                                    </a>
-                                    <ul class="list-product-btn">
-                                        <li class="wishlist">
-                                            <a href="javascript:void(0);" class="hover-tooltip tooltip-left box-icon">
-                                                <span class="icon icon-heart-2"></span>
-                                                <span class="tooltip">Add to Wishlist</span>
+@if (Model.BestProducts != null && Model.BestProducts.Any())
+{
+    <section class="flat-spacing-3 bg-main-2 overflow-hidden">
+        <div class="container-layout-right-4">
+            <div class="slide_wrap">
+                <div class="title-left">
+                    <h2 class="title text-white font-2 fw-normal text-xl-end">
+                        <span class="fst-italic">Fresh Finds</span>, Just In
+                    </h2>
+                </div>
+                <div class="wrap">
+                    <div class="swiper tf-swiper" 
+                         data-preview="3.39" 
+                         data-tablet="2.5" 
+                         data-mobile-sm="2.2" 
+                         data-mobile="1.4" 
+                         data-space="10" 
+                         data-pagination="1" 
+                         data-pagination-sm="1" 
+                         data-pagination-md="2" 
+                         data-pagination-lg="3">
+                        
+                        <div class="swiper-wrapper">
+                            @foreach (var product in Model.BestProducts)
+                            {
+                                <div class="swiper-slide">
+                                    <div class="card_product--V01 type-space-30">
+                                        <div class="card_product-wrapper aspect-ratio-1">
+                                            <a asp-action="ProductDetail" asp-controller="Item" asp-route-id="@product.StyleCode" class="product-img">
+                                                <img src="@(string.IsNullOrEmpty(product.PrimaryImageUrl) ? "/images/products/placeholder.jpg" : (product.PrimaryImageUrl.StartsWith("/") ? product.PrimaryImageUrl : "/" + product.PrimaryImageUrl))" 
+                                                     data-src="@(string.IsNullOrEmpty(product.PrimaryImageUrl) ? "/images/products/placeholder.jpg" : (product.PrimaryImageUrl.StartsWith("/") ? product.PrimaryImageUrl : "/" + product.PrimaryImageUrl))" 
+                                                     alt="@product.ItemName" class="img-product lazyload">
+                                                
+                                                @if (!string.IsNullOrEmpty(product.SecondaryImageUrl))
+                                                {
+                                                    <img src="@(product.SecondaryImageUrl.StartsWith("/") ? product.SecondaryImageUrl : "/" + product.SecondaryImageUrl)" 
+                                                         data-src="@(product.SecondaryImageUrl.StartsWith("/") ? product.SecondaryImageUrl : "/" + product.SecondaryImageUrl)" 
+                                                         alt="@product.ItemName" class="img-hover lazyload">
+                                                }
                                             </a>
-                                        </li>
-                                        <li>
-                                            <a href="#shoppingCart" data-bs-toggle="offcanvas" class="hover-tooltip tooltip-left box-icon">
-                                                <span class="icon icon-shop-cart"></span>
-                                                <span class="tooltip">Add to Cart</span>
+
+                                            <ul class="list-product-btn">
+                                                <li class="wishlist">
+                                                    <a href="javascript:void(0);" 
+                                                       class="hover-tooltip tooltip-left box-icon btn-add-wishlist @(Model.WishlistStyleCodes.Contains(product.StyleCode) ? "active" : "")"
+                                                       data-stylecode="@product.StyleCode">
+                                                        <span class="icon @(Model.WishlistStyleCodes.Contains(product.StyleCode) ? "icon-heart" : "icon-heart-2")"></span>
+                                                        <span class="tooltip">Wishlist</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="javascript:void(0);" class="hover-tooltip tooltip-left box-icon btn-add-to-cart" data-stylecode="@product.StyleCode">
+                                                        <span class="icon icon-shop-cart"></span>
+                                                        <span class="tooltip">Add to Cart</span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="#quickView" data-bs-toggle="modal" class="hover-tooltip tooltip-left box-icon quickview" data-stylecode="@product.StyleCode">
+                                                        <span class="icon icon-view"></span>
+                                                        <span class="tooltip">Quick View</span>
+                                                    </a>
+                                                </li>
+                                            </ul>
+
+                                            @if (product.DiscountPercentage > 0)
+                                            {
+                                                <div class="badge-box">
+                                                    <span class="badge-item sale">@product.DiscountPercentage.ToString("0")% OFF</span>
+                                                </div>
+                                            }
+                                            else if (product.IsNew)
+                                            {
+                                                <div class="badge-box">
+                                                    <span class="badge-item new">NEW IN</span>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <div class="card_product-info">
+                                            <a asp-action="Details" asp-controller="Item" asp-route-id="@product.StyleCode" class="name-product h5 text-white fw-normal link text-line-clamp-2">
+                                                @product.ItemName
                                             </a>
-                                        </li>
-                                        <li>
-                                            <a href="#quickView" data-bs-toggle="modal" class="hover-tooltip tooltip-left box-icon quickview">
-                                                <span class="icon icon-view"></span>
-                                                <span class="tooltip">Quick View</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="card_product-info">
-                                    <a href="product-default.html" class="name-product h5 text-white fw-normal link text-line-clamp-2">
-                                        Oval Yellow Diamond Double Halo Engagement Ring
-                                    </a>
-                                    <div class="price-wrap style-white">
-                                        <span class="price-new h5 text-white">$2,370.00</span>
+                                            <div class="price-wrap style-white">
+                                                @if (product.DiscountPercentage > 0)
+                                                {
+                                                    <span class="price-new h5 text-secondary">@product.SellingPrice.ToString("C")</span>
+                                                    <span class="price-old fw-normal">@product.MRP.ToString("C")</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="price-new h5 text-white">@product.MRP.ToString("C")</span>
+                                                }
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            }
                         </div>
-                        <!-- item 2 -->
-                        <div class="swiper-slide">
-                            <div class="card_product--V01 type-space-30">
-                                <div class="card_product-wrapper aspect-ratio-1">
-                                    <a href="product-default.html" class="product-img">
-                                        <img src="app/images/products/product-38.jpg" data-src="app/images/products/product-38.jpg"
-                                             alt="Image Product" class="lazyload img-product">
-                                        <img src="app/images/products/product-47.jpg" data-src="app/images/products/product-47.jpg"
-                                             alt="Image Product" class="lazyload img-hover">
-                                    </a>
-                                    <ul class="list-product-btn">
-                                        <li class="wishlist">
-                                            <a href="javascript:void(0);" class="hover-tooltip tooltip-left box-icon">
-                                                <span class="icon icon-heart-2"></span>
-                                                <span class="tooltip">Add to Wishlist</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#shoppingCart" data-bs-toggle="offcanvas" class="hover-tooltip tooltip-left box-icon">
-                                                <span class="icon icon-shop-cart"></span>
-                                                <span class="tooltip">Add to Cart</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#quickView" data-bs-toggle="modal" class="hover-tooltip tooltip-left box-icon quickview">
-                                                <span class="icon icon-view"></span>
-                                                <span class="tooltip">Quick View</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="card_product-info">
-                                    <a href="product-default.html" class="name-product h5 text-white fw-normal link text-line-clamp-2">
-                                        Rouje Lucia Dome Hoop Earrings
-                                    </a>
-                                    <div class="price-wrap style-white">
-                                        <span class="price-new h5 text-secondary">$1,240.00</span>
-                                        <span class="price-old fw-normal">$3,899.00</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- item 3 -->
-                        <div class="swiper-slide">
-                            <div class="card_product--V01 type-space-30">
-                                <div class="card_product-wrapper aspect-ratio-1">
-                                    <a href="product-default.html" class="product-img">
-                                        <img src="app/images/products/product-41.jpg" data-src="app/images/products/product-41.jpg"
-                                             alt="Image Product" class="lazyload img-product">
-                                        <img src="app/images/products/product-42.jpg" data-src="app/images/products/product-42.jpg"
-                                             alt="Image Product" class="lazyload img-hover">
-                                    </a>
-                                    <ul class="list-product-btn">
-                                        <li class="wishlist">
-                                            <a href="javascript:void(0);" class="hover-tooltip tooltip-left box-icon">
-                                                <span class="icon icon-heart-2"></span>
-                                                <span class="tooltip">Add to Wishlist</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#quickAdd" data-bs-toggle="modal" class="hover-tooltip tooltip-left box-icon">
-                                                <span class="icon icon-shop-cart"></span>
-                                                <span class="tooltip">Add to Cart</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#quickView" data-bs-toggle="modal" class="hover-tooltip tooltip-left box-icon quickview">
-                                                <span class="icon icon-view"></span>
-                                                <span class="tooltip">Quick View</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <div class="card_product-info">
-                                    <a href="product-default.html" class="name-product h5 text-white fw-normal link text-line-clamp-2">
-                                        Sixteen Stone Narrow Earrings
-                                    </a>
-                                    <div class="price-wrap style-white">
-                                        <span class="price-new h5 text-secondary">$1,990.00</span>
-                                        <span class="price-old fw-normal">$3,899.00</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- item 4 -->
-                        <div class="swiper-slide">
-                            <div class="card_product--V01 type-space-30">
-                                <div class="card_product-wrapper aspect-ratio-1">
-                                    <a href="product-default.html" class="product-img">
-                                        <img src="app/images/products/product-39.jpg" data-src="app/images/products/product-39.jpg"
-                                             alt="Image Product" class="lazyload img-product">
-                                        <img src="app/images/products/product-40.jpg" data-src="app/images/products/product-40.jpg"
-                                             alt="Image Product" class="lazyload img-hover">
-                                    </a>
-                                    <ul class="list-product-btn">
-                                        <li class="wishlist">
-                                            <a href="javascript:void(0);" class="hover-tooltip tooltip-left box-icon">
-                                                <span class="icon icon-heart-2"></span>
-                                                <span class="tooltip">Add to Wishlist</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#shoppingCart" data-bs-toggle="offcanvas" class="hover-tooltip tooltip-left box-icon">
-                                                <span class="icon icon-shop-cart"></span>
-                                                <span class="tooltip">Add to Cart</span>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="#quickView" data-bs-toggle="modal" class="hover-tooltip tooltip-left box-icon quickview">
-                                                <span class="icon icon-view"></span>
-                                                <span class="tooltip">Quick View</span>
-                                            </a>
-                                        </li>
-                                </div>
-                                <div class="card_product-info">
-                                    <a href="product-default.html" class="name-product h5 text-white fw-normal link text-line-clamp-2">
-                                        Sparkling Moon & Star Stud Earrings
-                                    </a>
-                                    <div class="price-wrap style-white">
-                                        <span class="price-new h5">$2,990.00</span>
-                                        <span class="price-old fw-normal">$3,899.00</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <span class="swiper-notification" aria-live="assertive" aria-atomic="true"></span>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
-<!-- Slider Product -->
-<!-- Banner Image Text -->
-<section>
-    <div class="banner_V07">
-        <div class="bn-image-text">
-            <div class="image">
-                <img src="app/images/banner/banner-10.jpg" data-src="app/images/banner/banner-10.jpg" alt="" class="lazyload">
+    </section>
+}
+<!-- /Slider Product -->
+<!-- Banner Image Text (New In Banner) -->
+@if (Model.FirstBanner != null)
+{
+    <section>
+        <div class="banner_V07">
+            <div class="bn-image-text">
+                <div class="image">
+                    <img src="@(Model.FirstBanner.ImageUrl.StartsWith("/") ? Model.FirstBanner.ImageUrl : "/" + Model.FirstBanner.ImageUrl)" 
+                         data-src="@(Model.FirstBanner.ImageUrl.StartsWith("/") ? Model.FirstBanner.ImageUrl : "/" + Model.FirstBanner.ImageUrl)" 
+                         alt="@Model.FirstBanner.Title" class="lazyload">
+                </div>
+                <div class="content wow fadeInUp">
+                    <h6 class="caption fw-normal">NEW IN</h6>
+                    <p class="title text-hero-2 font-2">
+                        @Html.Raw(Model.FirstBanner.Title.Contains(",") 
+                            ? Model.FirstBanner.Title.Replace(",", "<br><span class='fst-italic'>") + "</span>" 
+                            : Model.FirstBanner.Title)
+                    </p>
+                    @if (!string.IsNullOrEmpty(Model.FirstBanner.ButtonText))
+                    {
+                        <a href="@(Model.FirstBanner.LinkUrl ?? "#")" class="tf-btn btn-fill-2 type-large animate-btn text-uppercase">
+                            @Model.FirstBanner.ButtonText
+                            <i class="icon-arrow-right-2 fs-24"></i>
+                        </a>
+                    }
+                </div>
             </div>
-            <div class="content wow fadeInUp">
-                <h6 class="caption fw-normal">NEW IN</h6>
-                <p class="title text-hero-2 font-2">
-                    Radiate Elegance, <br> <span class="fst-italic">Wear Confidence</span>
-                </p>
-                <a href="shop-collection-list.html" class="tf-btn btn-fill-2 type-large animate-btn text-uppercase">
-                    Shop Collection
-                    <i class="icon-arrow-right-2 fs-24"></i>
-                </a>
-            </div>
-        </div>
-        <div class="wrap">
-            <div class="tf-swiper swiper wow fadeInUp" data-cursor="true">
-                <div class="swiper-wrapper">
-                    <div class="swiper-slide">
-                        <div class="card_product--V03">
-                            <div class="card_product-wrapper">
-                                <img src="app/images/products/product-48.jpg" data-src="app/images/products/product-48.jpg" alt="" class="lazyload">
-                            </div>
-                            <div class="card_product-info">
-                                <div class="infor">
-                                    <div class="info-product">
-                                        <a href="product-default.html" class="name h5 fw-normal link text-line-clamp-2">
-                                            Harris Reed In Good Hands Pearl Bracelet
+            @if (Model.NewLaunchProduct != null)
+            {
+                <div class="wrap">
+                    <div class="tf-swiper swiper wow fadeInUp" data-cursor="true">
+                        <div class="swiper-wrapper">
+                            <div class="swiper-slide">
+                                <div class="card_product--V03">
+                                    <div class="card_product-wrapper">
+                                        <a asp-action="Details" asp-controller="Item" asp-route-id="@Model.NewLaunchProduct.StyleCode">
+                                            <img src="@(string.IsNullOrEmpty(Model.NewLaunchProduct.PrimaryImageUrl) ? "/images/products/placeholder.jpg" : (Model.NewLaunchProduct.PrimaryImageUrl.StartsWith("/") ? Model.NewLaunchProduct.PrimaryImageUrl : "/" + Model.NewLaunchProduct.PrimaryImageUrl))" 
+                                                 data-src="@(string.IsNullOrEmpty(Model.NewLaunchProduct.PrimaryImageUrl) ? "/images/products/placeholder.jpg" : (Model.NewLaunchProduct.PrimaryImageUrl.StartsWith("/") ? Model.NewLaunchProduct.PrimaryImageUrl : "/" + Model.NewLaunchProduct.PrimaryImageUrl))" 
+                                                 alt="@Model.NewLaunchProduct.ItemName" class="lazyload">
                                         </a>
-                                        <div class="price-wrap">
-                                            <span class="price-new h5">$2,499.00</span>
+                                    </div>
+                                    <div class="card_product-info">
+                                        <div class="infor">
+                                            <div class="info-product">
+                                                <a asp-action="Details" asp-controller="Item" asp-route-id="@Model.NewLaunchProduct.StyleCode" class="name h5 fw-normal link text-line-clamp-2">
+                                                    @Model.NewLaunchProduct.ItemName
+                                                </a>
+                                                <div class="price-wrap">
+                                                    @if (Model.NewLaunchProduct.DiscountPercentage > 0)
+                                                    {
+                                                        <span class="price-new h5 text-secondary">@Model.NewLaunchProduct.SellingPrice.ToString("C")</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="price-new h5">@Model.NewLaunchProduct.MRP.ToString("C")</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="btn-action">
+                                            <a href="javascript:void(0);" class="tf-btn-icon style-circle hover-tooltip btn-add-wishlist @(Model.WishlistStyleCodes.Contains(Model.NewLaunchProduct.StyleCode) ? "active" : "")" 
+                                               data-stylecode="@Model.NewLaunchProduct.StyleCode">
+                                                <i class="icon @(Model.WishlistStyleCodes.Contains(Model.NewLaunchProduct.StyleCode) ? "icon-trash" : "icon-heart-2")"></i>
+                                                <span class="tooltip">Wishlist</span>
+                                            </a>
+                                            <a href="javascript:void(0);" class="tf-btn-icon style-circle hover-tooltip btn-add-to-cart" data-stylecode="@Model.NewLaunchProduct.StyleCode" data-quantity="1">
+                                                <i class="icon icon-shop-cart"></i>
+                                                <span class="tooltip">Add to Cart</span>
+                                            </a>
+                                            <a href="#quickView" data-bs-toggle="modal" class="tf-btn-icon style-circle hover-tooltip quickview" data-stylecode="@Model.NewLaunchProduct.StyleCode">
+                                                <i class="icon icon-view"></i>
+                                                <span class="tooltip">Quick View</span>
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="btn-action">
-                                    <a href="#quickView" data-bs-toggle="modal" class="tf-btn-icon style-circle hover-tooltip">
-                                        <i class="icon icon-view"></i>
-                                        <span class="tooltip">Quick View</span>
-                                    </a>
-                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="card_product--V03">
-                            <div class="card_product-wrapper">
-                                <img src="app/images/products/product-69.jpg" data-src="app/images/products/product-69.jpg" alt="" class="lazyload">
-                            </div>
-                            <div class="card_product-info">
-                                <div class="infor">
-                                    <div class="info-product">
-                                        <a href="product-default.html" class="name h5 fw-normal link text-line-clamp-2">
-                                            Oval Yellow Diamond Double Halo
-                                        </a>
-                                        <div class="price-wrap">
-                                            <span class="price-new h5">$3,211.00</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="btn-action">
-                                    <a href="#quickView" data-bs-toggle="modal" class="tf-btn-icon style-circle hover-tooltip">
-                                        <i class="icon icon-view"></i>
-                                        <span class="tooltip">Quick View</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="sw-dot-default style-white tf-sw-pagination d-lg-none"></div>
                     </div>
                 </div>
-                <div class="sw-dot-default style-white tf-sw-pagination d-lg-none"></div>
-            </div>
+            }
         </div>
-    </div>
-</section>
+    </section>
+}
 <!-- /Banner Image Text -->
-<!-- Collection -->
-<section class="flat-spacing-3">
-    <div class="container">
-        <h2 class="s-title font-2 text-center text-capitalize wow fadeInUp"><span class="fst-italic">Featured</span> Collections </h2>
-        <div class="cls-accordion wow fadeInUp" id="accordionCls">
-            <div class="widget-accordion">
-                <div class="accordion-title" data-bs-target="#rings" data-bs-toggle="collapse" aria-expanded="true" aria-controls="rings"
-                     role="button">
-                    <span class="icon icon-arrow-right-down"></span>
-                    <span>rings</span>
-                </div>
-                <div id="rings" class="collapse show" data-bs-parent="#accordionCls">
-                    <div class="accordion-body">
-                        <div class="image">
-                            <img src="app/images/collections/accordion-1.jpg" data-src="app/images/collections/accordion-1.jpg" alt=""
-                                 class="lazyload">
+<!-- Categories -->
+@if (Model.FeaturedCollections.Any())
+{   
+    <section class="flat-spacing-3">
+        <div class="container">
+            <h2 class="s-title font-2 text-center text-capitalize wow fadeInUp"><span class="fst-italic">Featured</span> Collections </h2>
+            <div class="cls-accordion wow fadeInUp" id="accordionCls">
+                @for (int i = 0; i < Model.FeaturedCollections.Count; i++)
+                {
+                    var collection = Model.FeaturedCollections[i];
+                    var isFirst = i == 0;
+                    var collapseId = $"collapse-{collection.CategoryId}";
+                    
+                    <div class="widget-accordion">
+                        <div class="accordion-title @(isFirst ? "" : "collapsed")" data-bs-target="#@collapseId" data-bs-toggle="collapse" aria-expanded="@(isFirst ? "true" : "false")" aria-controls="@collapseId"
+                             role="button">
+                            <span class="icon icon-arrow-right-down"></span>
+                            <span>@collection.CategoryName</span>
                         </div>
-                        <div class="cls-info">
-                            <h6 class="count-item">20 ITEMS</h6>
-                            <p class="text-main-4">
-                                Explore our women's ring collection, featuring crown, heart, and flower designs with clear crystals, as well
-                                as simple beaded and wishbone styles. Choose from sterling silver, 14k gold-plated, 14k rose gold-plated, or
-                                14k gold to refine your look.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="widget-accordion">
-                <div class="accordion-title collapsed" data-bs-target="#bracelets" data-bs-toggle="collapse" aria-expanded="false"
-                     aria-controls="bracelets" role="button">
-                    <span class="icon icon-arrow-right-down"></span>
-                    <span>bracelets</span>
-                </div>
-                <div id="bracelets" class="collapse" data-bs-parent="#accordionCls">
-                    <div class="accordion-body">
-                        <div class="image">
-                            <img src="app/images/collections/accordion-2.jpg" data-src="app/images/collections/accordion-2.jpg" alt=""
-                                 class="lazyload">
-                        </div>
-                        <div class="cls-info">
-                            <h6 class="count-item">9 ITEMS</h6>
-                            <p class="text-main-4">
-                                Browse our collection of women’s necklaces, where delicate motifs like hearts, florals, and infinity symbols
-                                meet shimmering stones and refined details. From sleek minimalist chains to eye-catching pendants, each piece
-                                comes in sterling silver, 14k gold-plated, 14k rose gold-plated, or solid 14k gold to suit your unique style.
-                            </p>
+                        <div id="@collapseId" class="collapse @(isFirst ? "show" : "")" data-bs-parent="#accordionCls">
+                            <div class="accordion-body">
+                                <div class="image">
+                                    <img src="@(string.IsNullOrEmpty(collection.ImageUrl) ? "/app/images/collections/placeholder.jpg" : (collection.ImageUrl.StartsWith("/") ? collection.ImageUrl : "/" + collection.ImageUrl))" 
+                                         data-src="@(string.IsNullOrEmpty(collection.ImageUrl) ? "/app/images/collections/placeholder.jpg" : (collection.ImageUrl.StartsWith("/") ? collection.ImageUrl : "/" + collection.ImageUrl))" 
+                                         alt="@collection.CategoryName" class="lazyload">
+                                </div>
+                                <div class="cls-info">
+                                    <h6 class="count-item">@collection.ItemCount ITEMS</h6>
+                                    <p class="text-main-4">
+                                        @(collection.Description ?? "No description available for this collection.")
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="widget-accordion">
-                <div class="accordion-title collapsed" data-bs-target="#necklaces" data-bs-toggle="collapse" aria-expanded="false"
-                     aria-controls="necklaces" role="button">
-                    <span class="icon icon-arrow-right-down"></span>
-                    <span>necklaces</span>
-                </div>
-                <div id="necklaces" class="collapse" data-bs-parent="#accordionCls">
-                    <div class="accordion-body">
-                        <div class="image">
-                            <img src="app/images/collections/accordion-3.jpg" data-src="app/images/collections/accordion-3.jpg" alt=""
-                                 class="lazyload">
-                        </div>
-                        <div class="cls-info">
-                            <h6 class="count-item">11 ITEMS</h6>
-                            <p class="text-main-4">
-                                Discover our rings collection to find the latest addition to your jewellery box. From crown, heart and flower
-                                rings adorned with clear crystals to simple beaded and wishbone styles, our rings for women collection has it
-                                all. Refine your style with a  sterling silver,  14k gold-plated, 14k rose gold-plated or 14k gold ring.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="widget-accordion">
-                <div class="accordion-title collapsed" data-bs-target="#gift-idea" data-bs-toggle="collapse" aria-expanded="false"
-                     aria-controls="gift-idea" role="button">
-                    <span class="icon icon-arrow-right-down"></span>
-                    <span>gift ideas</span>
-                </div>
-                <div id="gift-idea" class="collapse" data-bs-parent="#accordionCls">
-                    <div class="accordion-body">
-                        <div class="image">
-                            <img src="app/images/collections/accordion-4.jpg" data-src="app/images/collections/accordion-4.jpg" alt=""
-                                 class="lazyload">
-                        </div>
-                        <div class="cls-info">
-                            <h6 class="count-item">35 ITEMS</h6>
-                            <p class="text-main-4">
-                                Looking for the perfect gift? Our women’s necklace collection offers timeless styles featuring delicate
-                                hearts, sparkling pendants, and symbolic motifs like infinity and florals. Whether in sterling silver, 14k
-                                gold-plated, rose gold-plated, or solid 14k gold, each piece makes a thoughtful present for birthdays,
-                                anniversaries, or just because.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="widget-accordion">
-                <div class="accordion-title collapsed" data-bs-target="#personalize" data-bs-toggle="collapse" aria-expanded="false"
-                     aria-controls="personalize" role="button">
-                    <span class="icon icon-arrow-right-down"></span>
-                    <span>personalize</span>
-                </div>
-                <div id="personalize" class="collapse" data-bs-parent="#accordionCls">
-                    <div class="accordion-body">
-                        <div class="image">
-                            <img src="app/images/collections/accordion-5.jpg" data-src="app/images/collections/accordion-5.jpg" alt=""
-                                 class="lazyload">
-                        </div>
-                        <div class="cls-info">
-                            <h6 class="count-item">12 ITEMS</h6>
-                            <p class="text-main-4">
-                                Create a meaningful moment with our women’s necklace collection, featuring customizable designs like
-                                engravable pendants, initial charms, and symbolic shapes such as hearts and infinity signs. Available in
-                                sterling silver, 14k gold-plated, rose gold-plated, or solid 14k gold—each piece can be personalized to
-                                reflect a name, date, or message that matters.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                }
             </div>
         </div>
+    </section>
+}
+<!-- /Categories -->
+<!-- Discount Banner -->
+@if (Model.SecondBanner != null)
+{
+    <div class="banner_V02">
+        <div class="bn-image-blur">
+            <div class="blur">
+                <img src="@(Model.SecondBanner.ImageUrl.StartsWith("/") ? Model.SecondBanner.ImageUrl : "/" + Model.SecondBanner.ImageUrl)" 
+                     data-src="@(Model.SecondBanner.ImageUrl.StartsWith("/") ? Model.SecondBanner.ImageUrl : "/" + Model.SecondBanner.ImageUrl)" 
+                     alt="@Model.SecondBanner.Title" class="lazyload">
+            </div>
+        </div>
+        <div class="bn-content bg-linear-light-brown text-white-2">
+            @if(!string.IsNullOrEmpty(Model.SecondBanner.DiscountMessage))
+            {
+                <h6 class="caption text-uppercase wow fadeInUp animated">
+                    Discount: @Model.SecondBanner.DiscountMessage
+                </h6>
+            }
+            
+            <h2 class="title font-2 fw-normal wow fadeInUp animated">
+                @Html.Raw(formattedTitle)
+            </h2>
+
+            <p class="sub-title wow fadeInUp animated">
+                @Model.SecondBanner.Description
+            </p>
+
+            @if (!string.IsNullOrEmpty(Model.SecondBanner.ButtonText))
+            {
+                <a href="@(Model.SecondBanner.LinkUrl ?? "/Item")" class="tf-btn style-white-2 type-large wow fadeInUp animated">
+                    @Model.SecondBanner.ButtonText
+                    <i class="icon icon-arrow-right-2"></i>
+                </a>
+            }
+        </div>
     </div>
-</section>
-<!-- /Collection -->
+}
+<!-- /Discount Banner -->
 <!-- Marquee -->
-<div class="bg-dark-black">
-    <div class="tf_marquee-V01 style_2 infiniteSlide" data-speed="100">
+<div class="line-bt">
+    <div class="infiniteslide_wrap" style="overflow: hidden;"><div class="tf_marquee-V01 infiniteSlide " data-speed="100" data-style="infiniteslide17709044408121d94" style="display: flex; flex-flow: row; align-items: center; animation: 46.0513s linear 0s infinite normal none running infiniteslide17709044408121d94;">
         <!-- item 1 -->
-        <p>Black Friday Sale</p>
-        <i class="icon-rhombus"></i>
-        <p class="text-clip style-white">New Season Essential</p>
-        <i class="icon-diamond"></i>
+        <p style="flex: 0 0 auto; display: block;">EXCLUSIVE OFFER</p>
+        <i class="icon-rhombus fs_xl-49" style="flex: 0 0 auto; display: block;"></i>
+        <p class="text-clip" style="flex: 0 0 auto; display: block;">SHOP NOW, PAY LATER</p>
+        <i class="icon-rhombus fs_xl-49" style="flex: 0 0 auto; display: block;"></i>
         <!-- item 2 -->
-        <p>Black Friday Sale</p>
-        <i class="icon-diamond"></i>
-        <p class="text-clip style-white">New Season Essential</p>
-        <i class="icon-diamond"></i>
+        <p style="flex: 0 0 auto; display: block;">EXCLUSIVE OFFER</p>
+        <i class="icon-rhombus fs_xl-49" style="flex: 0 0 auto; display: block;"></i>
+        <p class="text-clip" style="flex: 0 0 auto; display: block;">SHOP NOW, PAY LATER</p>
+        <i class="icon-rhombus fs_xl-49" style="flex: 0 0 auto; display: block;"></i>
         <!-- item 3 -->
-        <p>Black Friday Sale</p>
-        <i class="icon-diamond"></i>
-        <p class="text-clip style-white">New Season Essential</p>
-        <i class="icon-diamond"></i>
+        <p style="flex: 0 0 auto; display: block;">EXCLUSIVE OFFER</p>
+        <i class="icon-rhombus fs_xl-49" style="flex: 0 0 auto; display: block;"></i>
+        <p class="text-clip" style="flex: 0 0 auto; display: block;">SHOP NOW, PAY LATER</p>
+        <i class="icon-rhombus fs_xl-49" style="flex: 0 0 auto; display: block;"></i>
         <!-- item 4 -->
-        <p>Black Friday Sale</p>
-        <i class="icon-diamond"></i>
-        <p class="text-clip style-white">New Season Essential</p>
-        <i class="icon-diamond"></i>
-    </div>
+        <p style="flex: 0 0 auto; display: block;">EXCLUSIVE OFFER</p>
+        <i class="icon-rhombus fs_xl-49" style="flex: 0 0 auto; display: block;"></i>
+        <p class="text-clip" style="flex: 0 0 auto; display: block;">SHOP NOW, PAY LATER</p>
+        <i class="icon-rhombus fs_xl-49" style="flex: 0 0 auto; display: block;"></i>
+    <p style="flex: 0 0 auto; display: block;" class="infiniteslide_clone">EXCLUSIVE OFFER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p class="text-clip infiniteslide_clone" style="flex: 0 0 auto; display: block;">SHOP NOW, PAY LATER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p style="flex: 0 0 auto; display: block;" class="infiniteslide_clone">EXCLUSIVE OFFER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p class="text-clip infiniteslide_clone" style="flex: 0 0 auto; display: block;">SHOP NOW, PAY LATER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p style="flex: 0 0 auto; display: block;" class="infiniteslide_clone">EXCLUSIVE OFFER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p class="text-clip infiniteslide_clone" style="flex: 0 0 auto; display: block;">SHOP NOW, PAY LATER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p style="flex: 0 0 auto; display: block;" class="infiniteslide_clone">EXCLUSIVE OFFER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p class="text-clip infiniteslide_clone" style="flex: 0 0 auto; display: block;">SHOP NOW, PAY LATER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p style="flex: 0 0 auto; display: block;" class="infiniteslide_clone">EXCLUSIVE OFFER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p class="text-clip infiniteslide_clone" style="flex: 0 0 auto; display: block;">SHOP NOW, PAY LATER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p style="flex: 0 0 auto; display: block;" class="infiniteslide_clone">EXCLUSIVE OFFER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p class="text-clip infiniteslide_clone" style="flex: 0 0 auto; display: block;">SHOP NOW, PAY LATER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p style="flex: 0 0 auto; display: block;" class="infiniteslide_clone">EXCLUSIVE OFFER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p class="text-clip infiniteslide_clone" style="flex: 0 0 auto; display: block;">SHOP NOW, PAY LATER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p style="flex: 0 0 auto; display: block;" class="infiniteslide_clone">EXCLUSIVE OFFER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i><p class="text-clip infiniteslide_clone" style="flex: 0 0 auto; display: block;">SHOP NOW, PAY LATER</p><i class="icon-rhombus fs_xl-49 infiniteslide_clone" style="flex: 0 0 auto; display: block;"></i></div></div>
 </div>
-<!-- /Marqee -->
-<!-- Banner Grid Product -->
-<section class="flat-spacing-3">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-6">
-                <div class="box_image--V01 style-2 hover-img">
-                    <div class="image img-style">
-                        <img src="app/images/banner/banner-11.jpg" data-src="app/images/banner/banner-11.jpg" alt="Box Image" class="lazyload">
-                    </div>
-                    <div class="content wow fadeInUp">
-                        <h3 class="title fw-medium font-2">
-                            Shine with Seasonal Picks
-                        </h3>
-                        <a href="shop-collection-list.html" class="tf-btn-line gap-10">
-                            <span class="h5">Explore Collection</span>
-                            <i class="icon-arrow-top-right fs-18"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="tf-grid-layout tf-col-2">
-                    <div class="card_product--V01 style-2 wow fadeInUp">
-                        <div class="card_product-wrapper aspect-ratio-1">
-                            <a href="product-default.html" class="product-img">
-                                <img src="app/images/products/product-5.jpg" data-src="app/images/products/product-5.jpg" alt="Image Product"
-                                     class="lazyload img-product">
-                                <img src="app/images/products/product-49.jpg" data-src="app/images/products/product-49.jpg" alt="Image Product"
-                                     class="lazyload img-hover">
-                            </a>
-                            <ul class="list-product-btn">
-                                <li class="wishlist">
-                                    <a href="javascript:void(0);" class="hover-tooltip tooltip-left box-icon">
-                                        <span class="icon icon-heart-2"></span>
-                                        <span class="tooltip">Add to Wishlist</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#quickAdd" data-bs-toggle="modal" class="hover-tooltip tooltip-left box-icon">
-                                        <span class="icon icon-shop-cart"></span>
-                                        <span class="tooltip">Quick Add</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#quickView" data-bs-toggle="modal" class="hover-tooltip tooltip-left box-icon quickview">
-                                        <span class="icon icon-view"></span>
-                                        <span class="tooltip">Quick View</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="card_product-info">
-                            <a href="product-default.html" class="name-product h5 fw-normal link text-line-clamp-2">
-                                Engagement Ring in 18k Yellow Gold
-                            </a>
-                            <div class="price-wrap">
-                                <span class="price-new h5">$2,499.00</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card_product--V01 style-2 wow fadeInUp">
-                        <div class="card_product-wrapper aspect-ratio-1">
-                            <a href="product-default.html" class="product-img">
-                                <img src="app/images/products/product-50.jpg" data-src="app/images/products/product-50.jpg" alt="Image Product"
-                                     class="lazyload img-product">
-                                <img src="app/images/products/product-50.jpg" data-src="app/images/products/product-50.jpg" alt="Image Product"
-                                     class="lazyload img-hover">
-                            </a>
-                            <ul class="list-product-btn">
-                                <li class="wishlist">
-                                    <a href="javascript:void(0);" class="hover-tooltip tooltip-left box-icon">
-                                        <span class="icon icon-heart-2"></span>
-                                        <span class="tooltip">Add to Wishlist</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#shoppingCart" data-bs-toggle="offcanvas" class="hover-tooltip tooltip-left box-icon">
-                                        <span class="icon icon-shop-cart"></span>
-                                        <span class="tooltip">Add to Cart</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#quickView" data-bs-toggle="modal" class="hover-tooltip tooltip-left box-icon quickview">
-                                        <span class="icon icon-view"></span>
-                                        <span class="tooltip">Quick View</span>
-                                    </a>
-                                </li>
-                            </ul>
-                            <div class="badge-box">
-                                <span class="badge-item sale">30% OFF</span>
-                            </div>
-                        </div>
-                        <div class="card_product-info">
-                            <a href="product-default.html" class="name-product h5 fw-normal link text-line-clamp-2">
-                                Teardrop Earrings
-                            </a>
-                            <div class="price-wrap">
-                                <span class="price-new h5 text-secondary">$2,999.00</span>
-                                <span class="price-old fw-normal">$3,999.00</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card_product--V01 style-2 wow fadeInUp">
-                        <div class="card_product-wrapper aspect-ratio-1">
-                            <a href="product-default.html" class="product-img">
-                                <img src="app/images/products/product-52.jpg" data-src="app/images/products/product-52.jpg" alt="Image Product"
-                                     class="lazyload img-product">
-                                <img src="app/images/products/product-51.jpg" data-src="app/images/products/product-51.jpg" alt="Image Product"
-                                     class="lazyload img-hover">
-                            </a>
-                            <ul class="list-product-btn">
-                                <li class="wishlist">
-                                    <a href="javascript:void(0);" class="hover-tooltip tooltip-left box-icon">
-                                        <span class="icon icon-heart-2"></span>
-                                        <span class="tooltip">Add to Wishlist</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#shoppingCart" data-bs-toggle="offcanvas" class="hover-tooltip tooltip-left box-icon">
-                                        <span class="icon icon-shop-cart"></span>
-                                        <span class="tooltip">Add to Cart</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#quickView" data-bs-toggle="modal" class="hover-tooltip tooltip-left box-icon quickview">
-                                        <span class="icon icon-view"></span>
-                                        <span class="tooltip">Quick View</span>
-                                    </a>
-                                </li>
-                            </ul>
-                            <div class="badge-box">
-                                <span class="badge-item sale">30% OFF</span>
-                            </div>
-                        </div>
-                        <div class="card_product-info">
-                            <a href="product-default.html" class="name-product h5 fw-normal link text-line-clamp-2">
-                                Dança Ring
-                            </a>
-                            <div class="price-wrap">
-                                <span class="price-new h5 text-secondary">$1,199.00</span>
-                                <span class="price-old fw-normal">$2,899.00</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card_product--V01 style-2 wow fadeInUp">
-                        <div class="card_product-wrapper aspect-ratio-1">
-                            <a href="product-default.html" class="product-img">
-                                <img src="app/images/products/product-41.jpg" data-src="app/images/products/product-41.jpg" alt="Image Product"
-                                     class="lazyload img-product">
-                                <img src="app/images/products/product-42.jpg" data-src="app/images/products/product-42.jpg" alt="Image Product"
-                                     class="lazyload img-hover">
-                            </a>
-                            <ul class="list-product-btn">
-                                <li class="wishlist">
-                                    <a href="javascript:void(0);" class="hover-tooltip tooltip-left box-icon">
-                                        <span class="icon icon-heart-2"></span>
-                                        <span class="tooltip">Add to Wishlist</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#shoppingCart" data-bs-toggle="offcanvas" class="hover-tooltip tooltip-left box-icon">
-                                        <span class="icon icon-shop-cart"></span>
-                                        <span class="tooltip">Add to Cart</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#quickView" data-bs-toggle="modal" class="hover-tooltip tooltip-left box-icon quickview">
-                                        <span class="icon icon-view"></span>
-                                        <span class="tooltip">Quick View</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="card_product-info">
-                            <a href="product-default.html" class="name-product h5 fw-normal link text-line-clamp-2">
-                                White Sapphire Ring in 10K White Gold
-                            </a>
-                            <div class="price-wrap">
-                                <span class="price-new h5">$4,199.00</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<!-- /Banner Grid Product -->
-<!-- Testimonial -->
-<section class="flat-spacing-7 parallax-wrap parallaxie" style='background-image: url("app/images/section/bg-1.jpg");'>
-    <div class="container">
-        <div class="sect-top wow fadeInUp">
-            <h2 class="s-title font-2 text-center text-white text-capitalize">Customer <span class="fst-italic">Reviews</span></h2>
-            <div class="group-btn-slider style-white">
-                <div class="nav-prev-swiper tf-sw-nav">
-                    <i class="icon-arrow-left"></i>
-                </div>
-                <div class="nav-next-swiper tf-sw-nav">
-                    <i class="icon-arrow-right"></i>
-                </div>
-            </div>
-        </div>
-        <div class="swiper tf-swiper wow fadeInUp" data-preview="2" data-tablet="1.5" data-mobile-sm="1" data-mobile="1" data-space-lg="30"
-             data-space-md="20" data-space="15" data-pagination="1" data-pagination-sm="1" data-pagination-md="1" data-pagination-lg="1">
-            <div class="swiper-wrapper">
-                <!-- item 1 -->
-                <div class="swiper-slide">
-                    <div class="box_testimonial--V01 hover-img">
-                        <a href="product-default.html" class="box_testimonial-image img-style">
-                            <img src="app/images/testimonial/tes-1.jpg" data-src="app/images/testimonial/tes-1.jpg" alt="" class="lazyload">
-                        </a>
-                        <div class="box_testimonial-content">
-                            <ul class="rate-wrap">
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star"></i></li>
-                            </ul>
-                            <h4 class="title">
-                                RECOMMEND!
-                            </h4>
-                            <p class="text">
-                                “The quality of the jewelry exceeded my expectations. Each piece feels premium and beautifully crafted, and
-                                the designs are incredibly stylish. I’m absolutely obsessed with my new collection!”
-                            </p>
-                            <span class="br-line"></span>
-                            <div class="tes-bottom">
-                                <div class="author-avatar">
-                                    <img src="app/images/avatar/avt-3.jpg" data-src="app/images/avatar/avt-3.jpg" alt="" class="lazyload">
-                                </div>
-                                <div class="author-info">
-                                    <div class="wrap-name">
-                                        <p class="name">Vincent P.</p>
-                                        <p class="verify">
-
-                                            <svg width="11" height="11" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <g>
-                                                    <path d="M7 14C10.866 14 14 10.866 14 7C14 3.13401 10.866 0 7 0C3.13401 0 0 3.13401 0 7C0 10.866 3.13401 14 7 14Z"
-                                                          fill="#48B02C" />
-                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                          d="M5.30268 8.96231L10.2357 4.02924C10.306 3.95923 10.4011 3.91992 10.5003 3.91992C10.5995 3.91992 10.6946 3.95923 10.7649 4.02924L11.2444 4.50877C11.3144 4.57902 11.3537 4.67416 11.3537 4.77334C11.3537 4.87251 11.3144 4.96765 11.2444 5.0379L6.30583 9.97097C6.23582 10.0393 6.14186 10.0776 6.04402 10.0776C5.94618 10.0776 5.85222 10.0393 5.78221 9.97097L5.30268 9.49145C5.23267 9.42119 5.19336 9.32606 5.19336 9.22688C5.19336 9.1277 5.23267 9.03256 5.30268 8.96231Z"
-                                                          fill="white" />
-                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                          d="M3.76447 5.95293L6.7684 8.96238C6.83841 9.03263 6.87772 9.12776 6.87772 9.22694C6.87772 9.32612 6.83841 9.42126 6.7684 9.49151L6.29439 9.96553C6.22413 10.0355 6.129 10.0748 6.02982 10.0748C5.93064 10.0748 5.8355 10.0355 5.76525 9.96553L2.7558 6.96159C2.68579 6.89134 2.64648 6.7962 2.64648 6.69702C2.64648 6.59784 2.68579 6.50271 2.7558 6.43246L3.23533 5.95844C3.30558 5.88843 3.40072 5.84912 3.4999 5.84912C3.59908 5.84912 3.69421 5.88292 3.76447 5.95293Z"
-                                                          fill="white" />
-                                                </g>
-                                            </svg>
-                                            Verified
-                                        </p>
-                                    </div>
-                                    <div class="wrap-item">
-                                        <p class="text text-caption">Item purchased:</p>
-                                        <a href="shop-default.html" class="tf-btn-line">
-                                            Round Huggie Hoop Earrings
-                                            <i class="icon icon-arrow-top-right"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- item 2 -->
-                <div class="swiper-slide">
-                    <div class="box_testimonial--V01 hover-img">
-                        <a href="product-default.html" class="box_testimonial-image img-style">
-                            <img src="app/images/testimonial/tes-2.jpg" data-src="app/images/testimonial/tes-2.jpg" alt="" class="lazyload">
-                        </a>
-                        <div class="box_testimonial-content">
-                            <ul class="rate-wrap">
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star text-star"></i></li>
-                            </ul>
-                            <h4 class="title">
-                                LOVE IT!
-                            </h4>
-                            <p class="text">
-                                “I was blown away by the craftsmanship of these jewelry pieces. Every item feels luxurious and the modern
-                                designs are simply stunning. I can’t get enough of my new favorite accessories!”
-                            </p>
-                            <span class="br-line"></span>
-                            <div class="tes-bottom">
-                                <div class="author-avatar">
-                                    <img src="app/images/avatar/avt-4.jpg" data-src="app/images/avatar/avt-4.jpg" alt="" class="lazyload">
-                                </div>
-                                <div class="author-info">
-                                    <div class="wrap-name">
-                                        <p class="name">Emily T.</p>
-                                        <p class="verify">
-                                            <svg width="11" height="11" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <g>
-                                                    <path d="M7 14C10.866 14 14 10.866 14 7C14 3.13401 10.866 0 7 0C3.13401 0 0 3.13401 0 7C0 10.866 3.13401 14 7 14Z"
-                                                          fill="#48B02C" />
-                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                          d="M5.30268 8.96231L10.2357 4.02924C10.306 3.95923 10.4011 3.91992 10.5003 3.91992C10.5995 3.91992 10.6946 3.95923 10.7649 4.02924L11.2444 4.50877C11.3144 4.57902 11.3537 4.67416 11.3537 4.77334C11.3537 4.87251 11.3144 4.96765 11.2444 5.0379L6.30583 9.97097C6.23582 10.0393 6.14186 10.0776 6.04402 10.0776C5.94618 10.0776 5.85222 10.0393 5.78221 9.97097L5.30268 9.49145C5.23267 9.42119 5.19336 9.32606 5.19336 9.22688C5.19336 9.1277 5.23267 9.03256 5.30268 8.96231Z"
-                                                          fill="white" />
-                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                          d="M3.76447 5.95293L6.7684 8.96238C6.83841 9.03263 6.87772 9.12776 6.87772 9.22694C6.87772 9.32612 6.83841 9.42126 6.7684 9.49151L6.29439 9.96553C6.22413 10.0355 6.129 10.0748 6.02982 10.0748C5.93064 10.0748 5.8355 10.0355 5.76525 9.96553L2.7558 6.96159C2.68579 6.89134 2.64648 6.7962 2.64648 6.69702C2.64648 6.59784 2.68579 6.50271 2.7558 6.43246L3.23533 5.95844C3.30558 5.88843 3.40072 5.84912 3.4999 5.84912C3.59908 5.84912 3.69421 5.88292 3.76447 5.95293Z"
-                                                          fill="white" />
-                                                </g>
-                                            </svg>
-                                            Verified
-                                        </p>
-                                    </div>
-                                    <div class="wrap-item">
-                                        <p class="text text-caption">Item purchased:</p>
-                                        <a href="shop-default.html" class="tf-btn-line">
-                                            Twisted Gold Statement Ring
-                                            <i class="icon icon-arrow-top-right"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- item 3 -->
-                <div class="swiper-slide">
-                    <div class="box_testimonial--V01 hover-img">
-                        <a href="product-default.html" class="box_testimonial-image img-style">
-                            <img src="app/images/testimonial/tes-1.jpg" data-src="app/images/testimonial/tes-1.jpg" alt="" class="lazyload">
-                        </a>
-                        <div class="box_testimonial-content">
-                            <ul class="rate-wrap">
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star"></i></li>
-                            </ul>
-                            <h4 class="title">
-                                RECOMMEND!
-                            </h4>
-                            <p class="text">
-                                “These minimalist hoops add the perfect touch of elegance to any outfit. Designed for everyday wear with a
-                                sleek, modern finish — your new go-to accessory for effortless sophistication.”
-                            </p>
-                            <span class="br-line"></span>
-                            <div class="tes-bottom">
-                                <div class="author-avatar">
-                                    <img src="app/images/avatar/avt-3.jpg" data-src="app/images/avatar/avt-3.jpg" alt="" class="lazyload">
-                                </div>
-                                <div class="author-info">
-                                    <div class="wrap-name">
-                                        <p class="name">Vincent P.</p>
-                                        <p class="verify">
-
-                                            <svg width="11" height="11" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <g>
-                                                    <path d="M7 14C10.866 14 14 10.866 14 7C14 3.13401 10.866 0 7 0C3.13401 0 0 3.13401 0 7C0 10.866 3.13401 14 7 14Z"
-                                                          fill="#48B02C" />
-                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                          d="M5.30268 8.96231L10.2357 4.02924C10.306 3.95923 10.4011 3.91992 10.5003 3.91992C10.5995 3.91992 10.6946 3.95923 10.7649 4.02924L11.2444 4.50877C11.3144 4.57902 11.3537 4.67416 11.3537 4.77334C11.3537 4.87251 11.3144 4.96765 11.2444 5.0379L6.30583 9.97097C6.23582 10.0393 6.14186 10.0776 6.04402 10.0776C5.94618 10.0776 5.85222 10.0393 5.78221 9.97097L5.30268 9.49145C5.23267 9.42119 5.19336 9.32606 5.19336 9.22688C5.19336 9.1277 5.23267 9.03256 5.30268 8.96231Z"
-                                                          fill="white" />
-                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                          d="M3.76447 5.95293L6.7684 8.96238C6.83841 9.03263 6.87772 9.12776 6.87772 9.22694C6.87772 9.32612 6.83841 9.42126 6.7684 9.49151L6.29439 9.96553C6.22413 10.0355 6.129 10.0748 6.02982 10.0748C5.93064 10.0748 5.8355 10.0355 5.76525 9.96553L2.7558 6.96159C2.68579 6.89134 2.64648 6.7962 2.64648 6.69702C2.64648 6.59784 2.68579 6.50271 2.7558 6.43246L3.23533 5.95844C3.30558 5.88843 3.40072 5.84912 3.4999 5.84912C3.59908 5.84912 3.69421 5.88292 3.76447 5.95293Z"
-                                                          fill="white" />
-                                                </g>
-                                            </svg>
-                                            Verified
-                                        </p>
-                                    </div>
-                                    <div class="wrap-item">
-                                        <p class="text text-caption">Item purchased:</p>
-                                        <a href="shop-default.html" class="tf-btn-line">
-                                            Pearl Drop Chain Necklace
-
-
-                                            <i class="icon icon-arrow-top-right"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- item 4 -->
-                <div class="swiper-slide">
-                    <div class="box_testimonial--V01 hover-img">
-                        <a href="product-default.html" class="box_testimonial-image img-style">
-                            <img src="app/images/testimonial/tes-2.jpg" data-src="app/images/testimonial/tes-2.jpg" alt="" class="lazyload">
-                        </a>
-                        <div class="box_testimonial-content">
-                            <ul class="rate-wrap">
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star text-star"></i></li>
-                                <li><i class="icon-star text-star"></i></li>
-                            </ul>
-                            <h4 class="title">
-                                LOVE IT!
-                            </h4>
-                            <p class="text">
-                                “The quality of the clothes exceeded my expectations. Every piece feels premium, and the designs are so
-                                trendy. I'm obsessed with my new wardrobe additions!”
-                            </p>
-                            <span class="br-line"></span>
-                            <div class="tes-bottom">
-                                <div class="author-avatar">
-                                    <img src="app/images/avatar/avt-4.jpg" data-src="app/images/avatar/avt-4.jpg" alt="" class="lazyload">
-                                </div>
-                                <div class="author-info">
-                                    <div class="wrap-name">
-                                        <p class="name">Emily T.</p>
-                                        <p class="verify">
-                                            <svg width="11" height="11" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <g>
-                                                    <path d="M7 14C10.866 14 14 10.866 14 7C14 3.13401 10.866 0 7 0C3.13401 0 0 3.13401 0 7C0 10.866 3.13401 14 7 14Z"
-                                                          fill="#48B02C" />
-                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                          d="M5.30268 8.96231L10.2357 4.02924C10.306 3.95923 10.4011 3.91992 10.5003 3.91992C10.5995 3.91992 10.6946 3.95923 10.7649 4.02924L11.2444 4.50877C11.3144 4.57902 11.3537 4.67416 11.3537 4.77334C11.3537 4.87251 11.3144 4.96765 11.2444 5.0379L6.30583 9.97097C6.23582 10.0393 6.14186 10.0776 6.04402 10.0776C5.94618 10.0776 5.85222 10.0393 5.78221 9.97097L5.30268 9.49145C5.23267 9.42119 5.19336 9.32606 5.19336 9.22688C5.19336 9.1277 5.23267 9.03256 5.30268 8.96231Z"
-                                                          fill="white" />
-                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                          d="M3.76447 5.95293L6.7684 8.96238C6.83841 9.03263 6.87772 9.12776 6.87772 9.22694C6.87772 9.32612 6.83841 9.42126 6.7684 9.49151L6.29439 9.96553C6.22413 10.0355 6.129 10.0748 6.02982 10.0748C5.93064 10.0748 5.8355 10.0355 5.76525 9.96553L2.7558 6.96159C2.68579 6.89134 2.64648 6.7962 2.64648 6.69702C2.64648 6.59784 2.68579 6.50271 2.7558 6.43246L3.23533 5.95844C3.30558 5.88843 3.40072 5.84912 3.4999 5.84912C3.59908 5.84912 3.69421 5.88292 3.76447 5.95293Z"
-                                                          fill="white" />
-                                                </g>
-                                            </svg>
-                                            Verified
-                                        </p>
-                                    </div>
-                                    <div class="wrap-item">
-                                        <p class="text text-caption">Item purchased:</p>
-                                        <a href="shop-default.html" class="tf-btn-line">
-                                            Round Huggie Hoop Earrings
-                                            <i class="icon icon-arrow-top-right"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="sw-dot-default style-white tf-sw-pagination"></div>
-        </div>
-    </div>
-</section>
-<!-- /Testimonial -->
+<!-- /Marquee -->
 <!-- Banner Image Text -->
 <div class="flat-spacing-3">
     <div class="container">
         <div class="banner_V05 wow fadeInUp">
             <div class="shape-image">
                 <div class="image">
-                    <img src="app/images/banner/banner-8.jpg" data-src="app/images/banner/banner-8.jpg" alt="Banner" class="lazyload">
+                    <img src="/app/images/banner/banner-8.jpg" data-src="/app/images/banner/banner-8.jpg" alt="Banner" class="lazyload">
                 </div>
                 <span class="line-circle"></span>
-                <img class="img-ic-star" src="app/icon/dou-star.svg" alt="">
+                <img class="img-ic-star" src="/app/icon/dou-star.svg" alt="">
             </div>
             <div class="bn-content">
                 <h2 class="title font-2 fw-normal">
@@ -943,7 +404,7 @@
                     Discover the closest location to explore our exclusive collections <br class="d-none d-xl-block"> and personalized
                     service.
                 </p>
-                <a href="shop-collection-list.html" class="tf-btn type-large text-uppercase">
+                <a href="/Item" class="tf-btn type-large text-uppercase">
                     Shop Collection
                     <i class="icon-arrow-right-2 fs-24"></i>
                 </a>
