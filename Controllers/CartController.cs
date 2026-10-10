@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Yash_Gems___Jewelleries.Models;
 using Yash_Gems___Jewelleries.Services;
+using Yash_Gems___Jewelleries.Interfaces;
 
 namespace Yash_Gems___Jewelleries.Controllers
 {
@@ -16,6 +16,7 @@ namespace Yash_Gems___Jewelleries.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ICompositeViewEngine _viewEngine;
         private readonly Data.ApplicationDbContext _context;
+        private const string GuestCartCookieName = "GuestCartId";
 
         public CartController(ICartService cartService, UserManager<ApplicationUser> userManager, ICompositeViewEngine viewEngine, Data.ApplicationDbContext context)
         {
@@ -25,54 +26,50 @@ namespace Yash_Gems___Jewelleries.Controllers
             _context = context;
         }
 
-        private string? GetUserId()
+        private string? GetUserId() => _userManager.GetUserId(User);
+
+        private string GetGuestId()
         {
-            return _userManager.GetUserId(User);
+            var guestId = Request.Cookies[GuestCartCookieName];
+            if (string.IsNullOrEmpty(guestId))
+            {
+                guestId = Guid.NewGuid().ToString();
+                var cookieOptions = new CookieOptions
+                {
+                    Expires = DateTimeOffset.UtcNow.AddDays(30),
+                    HttpOnly = true,
+                    IsEssential = true,
+                    SameSite = SameSiteMode.Lax
+                };
+                Response.Cookies.Append(GuestCartCookieName, guestId, cookieOptions);
+            }
+            return guestId;
         }
 
         private async Task<string> RenderPartialViewToString(string viewName, object? model)
         {
             ViewData.Model = model;
-            using (var sw = new StringWriter())
-            {
-                var viewResult = _viewEngine.FindView(ControllerContext, viewName, false);
-                if (viewResult.View == null)
-                {
-                    viewResult = _viewEngine.GetView(null, viewName, false);
-                }
+            using var sw = new StringWriter();
+            var viewResult = _viewEngine.FindView(ControllerContext, viewName, false);
+            if (viewResult.View == null) viewResult = _viewEngine.GetView(null, viewName, false);
 
-                if (viewResult.View == null)
-                {
-                    throw new ArgumentNullException($"{viewName} does not match any available view");
-                }
+            if (viewResult.View == null) throw new ArgumentNullException($"{viewName} not found");
 
-                var viewContext = new ViewContext(
-                    ControllerContext,
-                    viewResult.View,
-                    ViewData,
-                    TempData,
-                    sw,
-                    new HtmlHelperOptions()
-                );
-
-                await viewResult.View.RenderAsync(viewContext);
-                return sw.ToString();
-            }
+            var viewContext = new ViewContext(ControllerContext, viewResult.View, ViewData, TempData, sw, new HtmlHelperOptions());
+            await viewResult.View.RenderAsync(viewContext);
+            return sw.ToString();
         }
 
-        // GET: Cart
         public async Task<IActionResult> Index()
         {
-            var cartViewModel = await _cartService.GetCartAsync(GetUserId());
+            var cartViewModel = await _cartService.GetCartAsync(GetUserId(), GetGuestId());
             
-            // Fetch recommended products
             cartViewModel.RecommendedProducts = await _context.Items
                 .Where(i => i.IsActive && i.Quantity > 0)
                 .OrderBy(r => Guid.NewGuid())
                 .Take(8)
                 .ToListAsync();
 
-            // Fetch user wishlist for button states
             var userId = GetUserId();
             if (userId != null)
             {
@@ -85,36 +82,17 @@ namespace Yash_Gems___Jewelleries.Controllers
             return View(cartViewModel);
         }
 
-        // GET: Cart/GetCartHtml (For Sidebar/AJAX updates)
-        public async Task<IActionResult> GetCartHtml()
-        {
-            var cartViewModel = await _cartService.GetCartAsync(GetUserId());
-            var html = await RenderPartialViewToString("_CartSidebarPartial", cartViewModel);
-            return Json(new { success = true, html = html });
-        }
-
-        // GET: Cart/GetCartInfo
-        [HttpGet]
-        public async Task<IActionResult> GetCartInfo()
-        {
-            var userId = GetUserId();
-            var count = await _cartService.GetCartCountAsync(userId);
-            return Json(new { success = true, count = count });
-        }
-
-        // POST: Cart/AddToCart
         [HttpPost]
         public async Task<IActionResult> AddToCart(string styleCode, int quantity = 1)
         {
-            var success = await _cartService.AddToCartAsync(GetUserId(), styleCode, quantity);
+            var userId = GetUserId();
+            var guestId = GetGuestId();
+            var success = await _cartService.AddToCartAsync(userId, guestId, styleCode, quantity);
             
-            if (!success)
-            {
-                return Json(new { success = false, message = "Could not add item to cart (Out of stock or invalid)." });
-            }
+            if (!success) return Json(new { success = false, message = "Could not add item (Out of stock or invalid)." });
 
-            var cartViewModel = await _cartService.GetCartAsync(GetUserId());
-            var cartCount = cartViewModel.Items.Sum(i => i.Quantity);
+            var cartViewModel = await _cartService.GetCartAsync(userId, guestId);
+            var cartCount = await _cartService.GetCartCountAsync(userId, guestId);
             
             return Json(new { 
                 success = true, 
@@ -125,19 +103,17 @@ namespace Yash_Gems___Jewelleries.Controllers
             });
         }
 
-        // POST: Cart/UpdateQuantity
         [HttpPost]
         public async Task<IActionResult> UpdateQuantity(int cartItemId, string styleCode, int quantity)
         {
-            var success = await _cartService.UpdateQuantityAsync(GetUserId(), cartItemId, styleCode, quantity);
+            var userId = GetUserId();
+            var guestId = GetGuestId();
+            var success = await _cartService.UpdateQuantityAsync(userId, guestId, cartItemId, styleCode, quantity);
 
-            if (!success)
-            {
-                return Json(new { success = false, message = "Could not update quantity." });
-            }
+            if (!success) return Json(new { success = false, message = "Could not update quantity." });
 
-            var cartViewModel = await _cartService.GetCartAsync(GetUserId());
-            var cartCount = cartViewModel.Items.Sum(i => i.Quantity);
+            var cartViewModel = await _cartService.GetCartAsync(userId, guestId);
+            var cartCount = await _cartService.GetCartCountAsync(userId, guestId);
 
             return Json(new { 
                 success = true, 
@@ -150,19 +126,17 @@ namespace Yash_Gems___Jewelleries.Controllers
             });
         }
 
-        // POST: Cart/RemoveItem
         [HttpPost]
         public async Task<IActionResult> RemoveItem(int cartItemId, string styleCode)
         {
-            var success = await _cartService.RemoveItemAsync(GetUserId(), cartItemId, styleCode);
+            var userId = GetUserId();
+            var guestId = GetGuestId();
+            var success = await _cartService.RemoveItemAsync(userId, guestId, cartItemId, styleCode);
             
-            if (!success)
-            {
-                return Json(new { success = false, message = "Item not found." });
-            }
+            if (!success) return Json(new { success = false, message = "Item not found." });
 
-            var cartViewModel = await _cartService.GetCartAsync(GetUserId());
-            var cartCount = cartViewModel.Items.Sum(i => i.Quantity);
+            var cartViewModel = await _cartService.GetCartAsync(userId, guestId);
+            var cartCount = await _cartService.GetCartCountAsync(userId, guestId);
 
             return Json(new { 
                 success = true, 
@@ -175,14 +149,14 @@ namespace Yash_Gems___Jewelleries.Controllers
             });
         }
 
-        // POST: Cart/ClearCart
         [HttpPost]
         public async Task<IActionResult> ClearCart()
         {
-            await _cartService.ClearCartAsync(GetUserId());
+            var userId = GetUserId();
+            var guestId = GetGuestId();
+            await _cartService.ClearCartAsync(userId, guestId);
             
-            var cartViewModel = await _cartService.GetCartAsync(GetUserId());
-            var cartCount = 0;
+            var cartViewModel = await _cartService.GetCartAsync(userId, guestId);
 
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
@@ -197,6 +171,13 @@ namespace Yash_Gems___Jewelleries.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCartInfo()
+        {
+            var count = await _cartService.GetCartCountAsync(GetUserId(), GetGuestId());
+            return Json(new { success = true, count = count });
         }
     }
 }

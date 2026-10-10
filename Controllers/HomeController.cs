@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Yash_Gems___Jewelleries.Data;
 using Yash_Gems___Jewelleries.Models;
+using Yash_Gems___Jewelleries.ViewModels;
+using Yash_Gems___Jewelleries.Interfaces;
+using Yash_Gems___Jewelleries.Models.Enums;
 
 namespace Yash_Gems___Jewelleries.Controllers
 {
@@ -10,87 +13,181 @@ namespace Yash_Gems___Jewelleries.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly IBannerService _bannerService;
+        private readonly IDiscountService _discountService;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+        public HomeController(
+            ILogger<HomeController> logger, 
+            ApplicationDbContext context,
+            IBannerService bannerService,
+            IDiscountService discountService)
         {
             _logger = logger;
             _context = context;
+            _bannerService = bannerService;
+            _discountService = discountService;
         }
 
         // GET: Home
+        [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any, NoStore = false)]
         public async Task<IActionResult> Index()
         {
-            // Load banners
-            var banners = await _context.Banners
-                .Where(b => b.IsActive)
-                .OrderBy(b => b.DisplayOrder)
+            ViewData["Title"] = "Exquisite Handcrafted Jewelry";
+            ViewData["MetaDescription"] = "Discover the finest collection of handcrafted jewelry at Yash Gems & Jewelleries. From elegant rings to stunning necklaces, find your signature look.";
+            
+            var viewModel = new HomeViewModel();
+
+            // 1. Fetch Banners (optimized via Service)
+            var homeBanners = await _bannerService.GetHomeBannersAsync();
+
+            var firstBanner = homeBanners.FirstOrDefault(b => b.BannerType == BannerType.NewIn);
+            if (firstBanner != null)
+            {
+                viewModel.FirstBanner = new BannerHomeViewModel
+                {
+                    Title = firstBanner.Title,
+                    Description = firstBanner.Description,
+                    ImageUrl = firstBanner.ImageUrl,
+                    LinkUrl = firstBanner.LinkUrl,
+                    ButtonText = firstBanner.ButtonText,
+                    BannerType = firstBanner.BannerType.ToString()
+                };
+            }
+
+            var secondBanner = homeBanners.FirstOrDefault(b => b.BannerType == BannerType.Promotional);
+            if (secondBanner != null)
+            {
+                viewModel.SecondBanner = new BannerHomeViewModel
+                {
+                    Title = secondBanner.Title,
+                    Description = secondBanner.Description,
+                    ImageUrl = secondBanner.ImageUrl,
+                    LinkUrl = secondBanner.LinkUrl,
+                    ButtonText = secondBanner.ButtonText,
+                    BannerType = secondBanner.BannerType.ToString()
+                };
+
+                // Apply discount messaging only if a valid scheme exists
+                if (secondBanner.DiscountScheme != null && _discountService.IsSchemeValid(secondBanner.DiscountScheme))
+                {
+                    viewModel.SecondBanner.DiscountMessage = _discountService.GetDiscountMessage(secondBanner.DiscountScheme);
+                }
+            }
+
+            // 2. Fetch Top 5 Best Products (Deterministic rule: highest sold quantity via OrderItems)
+            viewModel.BestProducts = await _context.Items
+                .AsNoTracking()
+                .Where(i => i.IsActive)
+                .OrderByDescending(i => i.OrderItems.Sum(oi => (int?)oi.Quantity) ?? 0)
+                .Take(5)
+                .Select(i => new ProductHomeViewModel
+                {
+                    StyleCode = i.StyleCode,
+                    ItemName = i.ItemName,
+                    MRP = i.MRP,
+                    SellingPrice = i.SellingPrice,
+                    DiscountPercentage = i.DiscountPercentage,
+                    PrimaryImageUrl = i.PrimaryImageUrl,
+                    SecondaryImageUrl = i.SecondaryImageUrl,
+                    IsNew = i.IsNewLaunch,
+                    IsOnSale = i.IsOnSale,
+                    Pair = i.Pairs,
+                    CategoryName = i.Category.CategoryName,
+                    BrandName = i.Brand.BrandType
+                })
                 .ToListAsync();
 
-            // Load featured products
-            var featuredProducts = await _context.Items
-                .Include(i => i.Brand)
-                .Include(i => i.Category)
-                .Where(i => i.IsActive && i.IsFeatured)
-                .OrderByDescending(i => i.CreatedDate)
-                .Take(8)
-                .ToListAsync();
-
-            // Load new launches
-            var newLaunches = await _context.Items
-                .Include(i => i.Brand)
-                .Include(i => i.Category)
+            // 3. Newly Launched Single Product
+            viewModel.NewLaunchProduct = await _context.Items
+                .AsNoTracking()
                 .Where(i => i.IsActive && i.IsNewLaunch)
                 .OrderByDescending(i => i.CreatedDate)
-                .Take(8)
+                .Select(i => new ProductHomeViewModel
+                {
+                    StyleCode = i.StyleCode,
+                    ItemName = i.ItemName,
+                    MRP = i.MRP,
+                    SellingPrice = i.SellingPrice,
+                    DiscountPercentage = i.DiscountPercentage,
+                    PrimaryImageUrl = i.PrimaryImageUrl,
+                    SecondaryImageUrl = i.SecondaryImageUrl,
+                    IsNew = i.IsNewLaunch,
+                    IsOnSale = i.IsOnSale,
+                    Pair = i.Pairs,
+                    CategoryName = i.Category.CategoryName,
+                    BrandName = i.Brand.BrandType
+                })
+                .FirstOrDefaultAsync();
+
+            // 4. Featured Collections (Active categories with top displayed number)
+            viewModel.FeaturedCollections = await _context.Categories
+                .AsNoTracking()
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.CategoryName)
+                .Take(5) // Matching the 5 items in the template
+                .Select(c => new CategoryHomeViewModel
+                {
+                    CategoryId = c.CategoryId,
+                    CategoryName = c.CategoryName,
+                    Description = c.Description,
+                    ImageUrl = c.ImageUrl,
+                    ItemCount = c.Items.Count(i => i.IsActive)
+                })
                 .ToListAsync();
 
-            // Load on-sale products
-            var onSaleProducts = await _context.Items
-                .Include(i => i.Brand)
-                .Include(i => i.Category)
-                .Where(i => i.IsActive && i.IsOnSale)
-                .OrderByDescending(i => i.DiscountPercentage)
-                .Take(8)
+            // 5. Fetch Active Discount Schemes (Active, within date range and usage limit)
+            var now = DateTime.UtcNow;
+            viewModel.ActiveDiscountSchemes = await _context.DiscountSchemes
+                .AsNoTracking()
+                .Where(ds => ds.IsActive && now >= ds.StartDate && now <= ds.EndDate)
+                .Where(ds => ds.UsageLimit == null || ds.UsageCount < ds.UsageLimit)
+                .OrderByDescending(ds => ds.IsFeatured)
+                .ThenByDescending(ds => ds.CreatedDate)
+                .Select(ds => new DiscountSchemeHomeViewModel
+                {
+                    DiscountSchemeId = ds.DiscountSchemeId,
+                    SchemeName = ds.SchemeName,
+                    Description = ds.Description,
+                    DiscountType = ds.DiscountType,
+                    DiscountValue = ds.DiscountValue,
+                    CouponCode = ds.CouponCode,
+                    EndDate = ds.EndDate
+                })
                 .ToListAsync();
 
-            // Load active discount schemes
-            var discountSchemes = await _context.DiscountSchemes
-                .Where(d => d.IsActive && d.StartDate <= DateTime.UtcNow && d.EndDate >= DateTime.UtcNow)
-                .OrderByDescending(d => d.IsFeatured)
-                .Take(3)
-                .ToListAsync();
-
-            ViewBag.Banners = banners;
-            ViewBag.FeaturedProducts = featuredProducts;
-            ViewBag.NewLaunches = newLaunches;
-            ViewBag.OnSaleProducts = onSaleProducts;
-            ViewBag.DiscountSchemes = discountSchemes;
-
-            // Get user wishlist if logged in
-            var wishlistStyleCodes = new List<string>();
+            // 6. Wishlist Style Codes (if authenticated)
             if (User.Identity?.IsAuthenticated == true)
             {
                 var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                 if (!string.IsNullOrEmpty(userId))
                 {
-                    wishlistStyleCodes = await _context.Wishlists
+                    viewModel.WishlistStyleCodes = await _context.Wishlists
+                        .AsNoTracking()
                         .Where(w => w.UserId == userId)
                         .Select(w => w.StyleCode)
                         .ToListAsync();
                 }
             }
-            ViewBag.WishlistStyleCodes = wishlistStyleCodes;
 
+            return View(viewModel);
+        }
+
+        // GET: Home/Learn
+        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any, NoStore = false)]
+        public IActionResult Learn()
+        {
             return View();
         }
 
         // GET: Home/AboutUs
+        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any, NoStore = false)]
         public IActionResult AboutUs()
         {
             return View();
         }
 
         // GET: Home/ContactUs
+        [ResponseCache(Duration = 3600, Location = ResponseCacheLocation.Any, NoStore = false)]
         public IActionResult ContactUs()
         {
             return View();

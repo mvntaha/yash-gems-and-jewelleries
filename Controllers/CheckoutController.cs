@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Yash_Gems___Jewelleries.Models;
-using Yash_Gems___Jewelleries.Models.ViewModels;
+using Yash_Gems___Jewelleries.ViewModels;
 using Yash_Gems___Jewelleries.Services;
 
 namespace Yash_Gems___Jewelleries.Controllers
@@ -30,13 +30,14 @@ namespace Yash_Gems___Jewelleries.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login", "Account");
 
-            var cart = await _cartService.GetCartAsync(user.Id);
+            var guestId = Request.Cookies["GuestCartId"];
+            var cart = await _cartService.GetCartAsync(user.Id, guestId);
             if (cart.Items.Count == 0)
             {
                 return RedirectToAction("Index", "Cart");
             }
 
-            var model = new CheckoutViewModel
+            var model = new OrderPlacementViewModel
             {
                 FirstName = user.FirstName ?? "",
                 LastName = user.LastName ?? "",
@@ -56,13 +57,14 @@ namespace Yash_Gems___Jewelleries.Controllers
         // POST: Checkout/PlaceOrder
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PlaceOrder(CheckoutViewModel model)
+        public async Task<IActionResult> PlaceOrder(OrderPlacementViewModel model)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return RedirectToAction("Login", "Account");
 
             // Re-load cart for summary display if validation fails
-            model.Cart = await _cartService.GetCartAsync(user.Id);
+            var guestId = Request.Cookies["GuestCartId"];
+            model.Cart = await _cartService.GetCartAsync(user.Id, guestId);
 
             if (!ModelState.IsValid)
             {

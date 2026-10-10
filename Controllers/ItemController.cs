@@ -4,28 +4,35 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Yash_Gems___Jewelleries.Models;
-using Yash_Gems___Jewelleries.Models.ViewModels;
+using Yash_Gems___Jewelleries.ViewModels;
+using Yash_Gems___Jewelleries.Models.Enums;
 using Yash_Gems___Jewelleries.Data;
 
 namespace Yash_Gems___Jewelleries.Controllers
 {
-    public class ShopController : Controller
+    public class ItemController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
 
-        public ShopController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
+        public ItemController(UserManager<ApplicationUser> userManager, ApplicationDbContext context)
         {
             _userManager = userManager;
             _context = context;
         }
 
-        // GET: Shop/Index
+        // GET: Item/Index
+        [ResponseCache(Duration = 300, Location = ResponseCacheLocation.Any, NoStore = false, VaryByQueryKeys = new[] { "*" })]
         public async Task<IActionResult> Index(
             int[]? brandIds,
             int[]? categoryIds,
             int[]? goldTypeIds,
             string[]? stoneColors,
+            int[]? productTypeIds,
+            string[]? diamondClarities,
+            string[]? diamondColors,
+            string[]? diamondCuts,
+            string? caratRange,
             decimal? minPrice,
             decimal? maxPrice,
             string? availability,
@@ -35,12 +42,17 @@ namespace Yash_Gems___Jewelleries.Controllers
         {
             int pageSize = 12;
 
-            var viewModel = new ShopFilterViewModel
+            var viewModel = new ItemFilterViewModel
             {
                 BrandIds = brandIds,
                 CategoryIds = categoryIds,
                 GoldTypeIds = goldTypeIds,
                 StoneColors = stoneColors,
+                ProductTypeIds = productTypeIds,
+                DiamondClarities = diamondClarities,
+                DiamondColors = diamondColors,
+                DiamondCuts = diamondCuts,
+                CaratRange = caratRange,
                 MinPrice = minPrice,
                 MaxPrice = maxPrice,
                 Availability = availability,
@@ -56,6 +68,7 @@ namespace Yash_Gems___Jewelleries.Controllers
                 .Include(i => i.ProductType)
                 .Include(i => i.GoldKarat)
                 .Include(i => i.StoneDetails).ThenInclude(s => s.StoneQuality)
+                .Include(i => i.DiamondDetails).ThenInclude(d => d.DiamondQuality)
                 .Where(i => i.IsActive)
                 .AsQueryable();
 
@@ -72,18 +85,53 @@ namespace Yash_Gems___Jewelleries.Controllers
                 );
             }
 
+            // Convert arrays to Lists to avoid LINQ translation issues with primitive arrays (ReadOnlySpan conflict)
+            var selectedBrandIds = brandIds?.ToList() ?? new List<int>();
+            var selectedCategoryIds = categoryIds?.ToList() ?? new List<int>();
+            var selectedGoldTypeIds = goldTypeIds?.ToList() ?? new List<int>();
+            var selectedProductTypeIds = productTypeIds?.ToList() ?? new List<int>();
+            var selectedStoneColors = stoneColors?.ToList() ?? new List<string>();
+            var selectedDiamondClarities = diamondClarities?.ToList() ?? new List<string>();
+            var selectedDiamondColors = diamondColors?.ToList() ?? new List<string>();
+            var selectedDiamondCuts = diamondCuts?.ToList() ?? new List<string>();
+
             // Apply filters
-            if (brandIds?.Any() == true)
-                query = query.Where(i => brandIds.Contains(i.BrandId));
+            if (selectedBrandIds.Any())
+                query = query.Where(i => selectedBrandIds.Contains(i.BrandId));
 
-            if (categoryIds?.Any() == true)
-                query = query.Where(i => categoryIds.Contains(i.CategoryId));
+            if (selectedCategoryIds.Any())
+                query = query.Where(i => selectedCategoryIds.Contains(i.CategoryId));
 
-            if (goldTypeIds?.Any() == true)
-                query = query.Where(i => goldTypeIds.Contains(i.GoldTypeId));
+            if (selectedGoldTypeIds.Any())
+                query = query.Where(i => selectedGoldTypeIds.Contains(i.GoldTypeId));
 
-            if (stoneColors?.Any() == true)
-                query = query.Where(i => i.StoneDetails.Any(sd => sd.StoneQuality != null && stoneColors.Contains(sd.StoneQuality.Color)));
+            if (selectedProductTypeIds.Any())
+                query = query.Where(i => selectedProductTypeIds.Contains(i.ProductTypeId));
+
+            if (selectedStoneColors.Any())
+                query = query.Where(i => i.StoneDetails.Any(sd => sd.StoneQuality != null && selectedStoneColors.Contains(sd.StoneQuality.Color)));
+
+            if (selectedDiamondClarities.Any())
+                query = query.Where(i => i.DiamondDetails.Any(dd => dd.DiamondQuality != null && selectedDiamondClarities.Contains(dd.DiamondQuality.Clarity)));
+
+            if (selectedDiamondColors.Any())
+                query = query.Where(i => i.DiamondDetails.Any(dd => dd.DiamondQuality != null && selectedDiamondColors.Contains(dd.DiamondQuality.Color)));
+
+            if (selectedDiamondCuts.Any())
+                query = query.Where(i => i.DiamondDetails.Any(dd => dd.DiamondQuality != null && selectedDiamondCuts.Contains(dd.DiamondQuality.Cut)));
+
+            if (!string.IsNullOrEmpty(caratRange))
+            {
+                var parts = caratRange.Split('-');
+                if (parts.Length == 2 && decimal.TryParse(parts[0], out decimal minCarat) && decimal.TryParse(parts[1], out decimal maxCarat))
+                {
+                    query = query.Where(i => i.DiamondDetails.Any(dd => dd.Carat >= minCarat && dd.Carat <= maxCarat));
+                }
+                else if (caratRange.StartsWith("1.0+"))
+                {
+                     query = query.Where(i => i.DiamondDetails.Any(dd => dd.Carat >= 1.0m));
+                }
+            }
 
             if (minPrice.HasValue)
                 query = query.Where(i => i.SellingPrice >= minPrice.Value);
@@ -109,38 +157,59 @@ namespace Yash_Gems___Jewelleries.Controllers
 
             viewModel.TotalItems = await query.CountAsync();
             viewModel.Items = await query
+                .AsNoTracking()
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
-            var baseQuery = _context.Items.Where(i => i.IsActive);
+            var baseQuery = _context.Items.AsNoTracking().Where(i => i.IsActive);
             
             viewModel.Categories = await _context.Categories
                 .Where(c => c.IsActive)
-                .Select(c => new FilterOption {
+                .Select(c => new ItemFilterOption {
                     Id = c.CategoryId,
                     Label = c.CategoryName,
-                    Count = baseQuery.Count(i => i.CategoryId == c.CategoryId),
-                    IsSelected = categoryIds != null && categoryIds.Contains(c.CategoryId)
+                    ImageUrl = c.ImageUrl,
+                    Count = baseQuery.Count(i => i.CategoryId == c.CategoryId)
                 }).ToListAsync();
+
+            foreach (var opt in viewModel.Categories)
+                opt.IsSelected = selectedCategoryIds.Contains(opt.Id);
 
             viewModel.Brands = await _context.Brands
                 .Where(b => b.IsActive)
-                .Select(b => new FilterOption {
+                .Select(b => new ItemFilterOption {
                     Id = b.BrandId,
                     Label = b.BrandType,
-                    Count = baseQuery.Count(i => i.BrandId == b.BrandId),
-                    IsSelected = brandIds != null && brandIds.Contains(b.BrandId)
+                    ImageUrl = b.LogoUrl,
+                    Count = baseQuery.Count(i => i.BrandId == b.BrandId)
                 }).ToListAsync();
+
+            foreach (var opt in viewModel.Brands)
+                opt.IsSelected = selectedBrandIds.Contains(opt.Id);
+
+            viewModel.ProductTypes = await _context.ProductTypes
+                .Where(p => p.IsActive)
+                .Select(p => new ItemFilterOption {
+                    Id = p.ProductTypeId,
+                    Label = p.ProductTypeName,
+                    ImageUrl = p.ImageUrl,
+                    Count = baseQuery.Count(i => i.ProductTypeId == p.ProductTypeId)
+                }).ToListAsync();
+
+            foreach (var opt in viewModel.ProductTypes)
+                opt.IsSelected = selectedProductTypeIds.Contains(opt.Id);
 
             viewModel.Materials = await _context.GoldKarats
                 .Where(g => g.IsActive)
-                .Select(g => new FilterOption {
+                .Select(g => new ItemFilterOption {
                     Id = g.GoldTypeId,
                     Label = g.GoldCarat,
-                    Count = baseQuery.Count(i => i.GoldTypeId == g.GoldTypeId),
-                    IsSelected = goldTypeIds != null && goldTypeIds.Contains(g.GoldTypeId)
+                    Count = baseQuery.Count(i => i.GoldTypeId == g.GoldTypeId)
                 }).ToListAsync();
+
+            foreach (var opt in viewModel.Materials)
+                opt.IsSelected = selectedGoldTypeIds.Contains(opt.Id);
 
             // Stone Color counts
             var stoneColorsData = await _context.StoneQualities
@@ -152,12 +221,54 @@ namespace Yash_Gems___Jewelleries.Controllers
             foreach (var color in stoneColorsData)
             {
                 if (string.IsNullOrEmpty(color)) continue;
-                viewModel.StoneColorsList.Add(new FilterOption {
+                viewModel.StoneColorsList.Add(new ItemFilterOption {
                     Value = color,
                     Label = color,
                     Count = baseQuery.Count(i => i.StoneDetails.Any(sd => sd.StoneQuality != null && sd.StoneQuality.Color == color)),
-                    IsSelected = stoneColors != null && stoneColors.Contains(color)
+                    IsSelected = selectedStoneColors.Contains(color)
                 });
+            }
+
+            // Diamond filters
+            var diamondQualities = await _context.DiamondQualities.Where(d => d.IsActive).ToListAsync();
+
+            // Diamond Clarity
+            var validClarities = diamondQualities.Where(d => !string.IsNullOrEmpty(d.Clarity)).Select(d => d.Clarity).Distinct().ToList();
+            foreach (var clarity in validClarities)
+            {
+                 if (string.IsNullOrEmpty(clarity)) continue;
+                 viewModel.DiamondClaritiesList.Add(new ItemFilterOption {
+                    Value = clarity,
+                    Label = clarity,
+                    Count = baseQuery.Count(i => i.DiamondDetails.Any(dd => dd.DiamondQuality != null && dd.DiamondQuality.Clarity == clarity)),
+                    IsSelected = selectedDiamondClarities.Contains(clarity)
+                 });
+            }
+
+            // Diamond Color
+            var validColors = diamondQualities.Where(d => !string.IsNullOrEmpty(d.Color)).Select(d => d.Color).Distinct().ToList();
+            foreach (var color in validColors)
+            {
+                 if (string.IsNullOrEmpty(color)) continue;
+                 viewModel.DiamondColorsList.Add(new ItemFilterOption {
+                    Value = color,
+                    Label = color,
+                    Count = baseQuery.Count(i => i.DiamondDetails.Any(dd => dd.DiamondQuality != null && dd.DiamondQuality.Color == color)),
+                    IsSelected = selectedDiamondColors.Contains(color)
+                 });
+            }
+
+            // Diamond Cut
+            var validCuts = diamondQualities.Where(d => !string.IsNullOrEmpty(d.Cut)).Select(d => d.Cut).Distinct().ToList();
+            foreach (var cut in validCuts)
+            {
+                 if (string.IsNullOrEmpty(cut)) continue;
+                 viewModel.DiamondCutsList.Add(new ItemFilterOption {
+                    Value = cut,
+                    Label = cut,
+                    Count = baseQuery.Count(i => i.DiamondDetails.Any(dd => dd.DiamondQuality != null && dd.DiamondQuality.Cut == cut)),
+                    IsSelected = selectedDiamondCuts.Contains(cut)
+                 });
             }
 
             viewModel.InStockCount = await baseQuery.CountAsync(i => i.Quantity > 0);
@@ -181,7 +292,8 @@ namespace Yash_Gems___Jewelleries.Controllers
             return View(viewModel);
         }
 
-        // GET: Shop/ProductDetail/{styleCode}
+        // GET: Item/ProductDetail/{styleCode}
+        [ResponseCache(Duration = 600, Location = ResponseCacheLocation.Any, NoStore = false, VaryByQueryKeys = new[] { "id" })]
         public async Task<IActionResult> ProductDetail(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -190,15 +302,14 @@ namespace Yash_Gems___Jewelleries.Controllers
             }
 
             var item = await _context.Items
+                .AsNoTracking()
                 .Include(i => i.Brand)
                 .Include(i => i.Category)
                 .Include(i => i.Certificate)
                 .Include(i => i.ProductType)
                 .Include(i => i.GoldKarat)
-                .Include(i => i.DiamondDetails).ThenInclude(d => d.DiamondQuality)
-                .Include(i => i.StoneDetails).ThenInclude(s => s.StoneQuality)
-                .Include(i => i.Reviews.Where(r => r.IsApproved))
-                    .ThenInclude(r => r.User)
+                .Include(i => i.DiamondDetails).ThenInclude(dd => dd.DiamondQuality)
+                .Include(i => i.StoneDetails).ThenInclude(sd => sd.StoneQuality)
                 .FirstOrDefaultAsync(i => i.StyleCode == id && i.IsActive);
 
             if (item == null)
@@ -206,60 +317,20 @@ namespace Yash_Gems___Jewelleries.Controllers
                 return NotFound();
             }
 
-            // Calculate average rating and review count
-            ViewBag.AverageRating = item.AverageRating;
-            ViewBag.ReviewCount = item.ReviewCount;
+            // SEO Tags
+            ViewBag.Description = item.MetaDescription ?? item.Description ?? item.ItemName;
+            ViewData["Title"] = item.MetaTitle ?? item.ItemName;
+            ViewData["MetaDescription"] = item.MetaDescription ?? (item.Description?.Length > 160 ? item.Description.Substring(0, 157) + "..." : item.Description);
+            ViewData["MetaKeywords"] = item.MetaKeywords ?? $"{item.ItemName}, {item.Category?.CategoryName}, {item.Brand?.BrandType}, SC{item.StyleCode}";
+            ViewData["OgType"] = "product";
+            ViewData["OgImage"] = item.PrimaryImageUrl;
 
-            // Check review eligibility for authenticated users
-            var user = await _userManager.GetUserAsync(User);
-            ViewBag.CanReview = false;
-            ViewBag.ReviewEligibilityReason = "";
-            ViewBag.HasReviewed = false;
-
-            if (user != null)
-            {
-                // Check if user has already reviewed this product
-                var hasReviewed = await _context.Reviews
-                    .AnyAsync(r => r.UserId == user.Id && r.StyleCode == item.StyleCode && r.IsActive);
-
-                ViewBag.HasReviewed = hasReviewed;
-
-                if (!hasReviewed)
-                {
-                    // Check if user has a valid order with this product
-                    var hasActiveOrder = await _context.Orders
-                        .Where(o => o.UserId == user.Id && o.OrderStatus == "Delivered" && o.IsActive)
-                        .AnyAsync(o => o.OrderItems.Any(oi => oi.StyleCode == item.StyleCode));
-
-                    if (hasActiveOrder)
-                    {
-                        ViewBag.CanReview = true;
-                    }
-                    else
-                    {
-                        ViewBag.ReviewEligibilityReason = "You must have a valid order to leave a review";
-                    }
-                }
-                else
-                {
-                    ViewBag.ReviewEligibilityReason = "You have already reviewed this product";
-                }
-            }
-            else
-            {
-                ViewBag.ReviewEligibilityReason = "Please log in to write a review";
-            }
-
-            // SEO and Meta
-            ViewData["Title"] = item.ItemName;
-            ViewData["MetaDescription"] = item.Description?.Length > 160 ? item.Description.Substring(0, 157) + "..." : item.Description;
-
-            // Fetch Related Products
+            // Fetch Related Products (same category, active, excluding current)
             var relatedProducts = await _context.Items
+                .AsNoTracking()
                 .Where(i => i.CategoryId == item.CategoryId && i.StyleCode != item.StyleCode && i.IsActive)
                 .Take(8)
                 .ToListAsync();
-            ViewBag.RelatedProducts = relatedProducts;
 
             // Recently Viewed logic
             var recentlyViewed = Request.Cookies["RecentlyViewed"];
@@ -269,43 +340,50 @@ namespace Yash_Gems___Jewelleries.Controllers
                 viewedCodes = recentlyViewed.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
             }
 
-            // Remove current if exists, and add to front
+            // Update Cookie: Remove current if exists, and add to front
             viewedCodes.Remove(item.StyleCode);
             viewedCodes.Insert(0, item.StyleCode);
-            
-            // Keep only last 10
             var updatedCodes = viewedCodes.Take(10).ToList();
             Response.Cookies.Append("RecentlyViewed", string.Join(",", updatedCodes), new CookieOptions { Expires = DateTimeOffset.Now.AddDays(30) });
 
-            // Fetch recently viewed items
+            // Fetch recently viewed items (excluding current)
             var otherViewedCodes = updatedCodes.Where(c => c != item.StyleCode).ToList();
-            var recentlyViewedItems = await _context.Items
+            var recentlyViewedItemsList = await _context.Items
+                .AsNoTracking()
                 .Where(i => otherViewedCodes.Contains(i.StyleCode) && i.IsActive)
                 .ToListAsync();
             
             // Order them according to the cookie list
             var sortedRecentlyViewed = otherViewedCodes
-                .Select(code => recentlyViewedItems.FirstOrDefault(i => i.StyleCode == code))
+                .Select(code => recentlyViewedItemsList.FirstOrDefault(i => i.StyleCode == code))
                 .Where(i => i != null)
+                .Cast<Item>()
                 .ToList();
 
-            ViewBag.RecentlyViewedItems = sortedRecentlyViewed;
-
             // Fetch user wishlist
+            var user = await _userManager.GetUserAsync(User);
             var wishlistStyleCodes = new List<string>();
             if (user != null)
             {
                 wishlistStyleCodes = await _context.Wishlists
+                    .AsNoTracking()
                     .Where(w => w.UserId == user.Id)
                     .Select(w => w.StyleCode)
                     .ToListAsync();
             }
-            ViewBag.WishlistStyleCodes = wishlistStyleCodes;
 
-            return View(item);
+            var viewModel = new ProductDetailViewModel
+            {
+                Item = item,
+                RelatedProducts = relatedProducts,
+                RecentlyViewedItems = sortedRecentlyViewed,
+                WishlistStyleCodes = wishlistStyleCodes
+            };
+
+            return View(viewModel);
         }
 
-        // GET: Shop/GetQuickDetails/{id}
+        // GET: Item/GetQuickDetails/{id}
         [HttpGet]
         public async Task<IActionResult> GetQuickDetails(string id)
         {
@@ -364,7 +442,7 @@ namespace Yash_Gems___Jewelleries.Controllers
 
             return Json(result);
         }
-        // GET: Shop/QuickView/{id}
+        // GET: Item/QuickView/{id}
         [HttpGet]
         public async Task<IActionResult> QuickView(string id)
         {
@@ -401,3 +479,5 @@ namespace Yash_Gems___Jewelleries.Controllers
         }
     }
 }
+
+
